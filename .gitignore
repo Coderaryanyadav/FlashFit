@@ -3,7 +3,7 @@ node_modules
 .env
 .env.local
 .DS_Store
-lib
+
 dist
 *.log
 seed-data/service-account.json
