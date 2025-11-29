@@ -283,11 +283,6 @@ export default function DriverHomePage() {
     const confirmDelivery = async () => {
         if (!activeOrder || !user) return;
 
-        if (otp.length !== 4) {
-            alert("Please enter a valid 4-digit OTP");
-            return;
-        }
-
         setIsSubmittingDelivery(true);
         vibrate(20);
 
@@ -295,12 +290,12 @@ export default function DriverHomePage() {
             const completeOrderFn = httpsCallable(functions, 'completeOrder');
             await completeOrderFn({
                 orderId: activeOrder.id,
-                otp: otp,
+                // otp: otp, // Removed
                 deliveredItemIds: selectedItemIds
             });
 
             setShowDeliveryModal(false);
-            setOtp("");
+            // setOtp(""); // Removed
             vibrate([100, 50, 100]);
         } catch (error: any) {
             console.error("Error confirming delivery:", error);
@@ -614,17 +609,7 @@ export default function DriverHomePage() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="px-4 pt-4">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Delivery OTP</label>
-                        <input
-                            type="text"
-                            maxLength={4}
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                            placeholder="0 0 0 0"
-                            className="w-full bg-black border border-zinc-700 rounded-xl p-4 text-center text-3xl font-black tracking-[1em] focus:outline-none focus:border-green-500 transition-colors text-white placeholder:text-zinc-800"
-                        />
-                    </div>
+
 
                     <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
                         {activeOrder?.items?.map((item: any, idx: number) => {
