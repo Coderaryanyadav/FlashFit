@@ -11,6 +11,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "firebase": "^12.6.0"
+    "firebase": "^10.7.1"
   }
 }
