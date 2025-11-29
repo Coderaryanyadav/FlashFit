@@ -611,7 +611,7 @@ export default function DriverHomePage() {
 
 
 
-                    <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                    <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto overscroll-contain touch-pan-y">
                         {activeOrder?.items?.map((item: any, idx: number) => {
                             const itemId = item.id || item.productId;
                             const isSelected = selectedItemIds.includes(itemId);
