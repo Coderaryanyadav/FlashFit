@@ -112,83 +112,101 @@ export const createOrder = functions.https.onCall(async (data, context) => {
 
 // 1.5 completeOrder
 export const completeOrder = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
-  }
-
-  const { orderId, otp, deliveredItemIds } = data;
-  const orderRef = db.collection("orders").doc(orderId);
-
-  await db.runTransaction(async (t) => {
-    const orderDoc = await t.get(orderRef);
-    if (!orderDoc.exists) {
-      throw new functions.https.HttpsError("not-found", "Order not found");
+  try {
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const orderData = orderDoc.data();
+    const { orderId, otp, deliveredItemIds } = data;
 
-    if (orderData?.deliveryOtp !== otp) {
-      throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
+    if (!orderId || !otp) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing orderId or otp");
     }
 
-    const items = orderData?.items || [];
-    const updatedItems = items.map((item: any) => {
-      const itemId = item.id || item.productId;
-      const isDelivered = deliveredItemIds.includes(itemId);
-      return {
-        ...item,
-        status: isDelivered ? "delivered" : "returned",
-      };
-    });
+    if (!Array.isArray(deliveredItemIds)) {
+      throw new functions.https.HttpsError("invalid-argument", "deliveredItemIds must be an array");
+    }
 
-    const returnedItems = items.filter((item: any) => {
-      const itemId = item.id || item.productId;
-      return !deliveredItemIds.includes(itemId);
-    });
+    const orderRef = db.collection("orders").doc(orderId);
 
-    // Handle returns (increment stock)
-    for (const item of returnedItems) {
-      const productId = item.productId || item.id;
-      if (productId) {
-        const productRef = db.collection("products").doc(productId);
-        const productDoc = await t.get(productRef);
-        if (productDoc.exists) {
-          const productData = productDoc.data();
-          // Handle size-specific stock return
-          if (item.size && productData?.stock && typeof productData.stock === "object") {
-            const currentStock = productData.stock[item.size] || 0;
-            t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
-          } else {
-            const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
-            if (typeof productData?.stock === "number") {
-              t.update(productRef, { stock: currentStock + (item.quantity || 1) });
+    await db.runTransaction(async (t) => {
+      const orderDoc = await t.get(orderRef);
+      if (!orderDoc.exists) {
+        throw new functions.https.HttpsError("not-found", "Order not found");
+      }
+
+      const orderData = orderDoc.data();
+
+      if (orderData?.deliveryOtp !== otp) {
+        throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
+      }
+
+      const items = orderData?.items || [];
+      const updatedItems = items.map((item: any) => {
+        const itemId = item.id || item.productId;
+        const isDelivered = deliveredItemIds.includes(itemId);
+        return {
+          ...item,
+          status: isDelivered ? "delivered" : "returned",
+        };
+      });
+
+      const returnedItems = items.filter((item: any) => {
+        const itemId = item.id || item.productId;
+        return !deliveredItemIds.includes(itemId);
+      });
+
+      // Handle returns (increment stock)
+      for (const item of returnedItems) {
+        const productId = item.productId || item.id;
+        if (productId) {
+          const productRef = db.collection("products").doc(productId);
+          const productDoc = await t.get(productRef);
+          if (productDoc.exists) {
+            const productData = productDoc.data();
+            // Handle size-specific stock return
+            if (item.size && productData?.stock && typeof productData.stock === "object") {
+              const currentStock = productData.stock[item.size] || 0;
+              t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
+            } else {
+              const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
+              if (typeof productData?.stock === "number") {
+                t.update(productRef, { stock: currentStock + (item.quantity || 1) });
+              }
             }
           }
         }
       }
-    }
 
-    const allReturned = deliveredItemIds.length === 0;
-    const newStatus = allReturned ? "returning" : "delivered";
-    const currentPaymentStatus = orderData?.paymentStatus || "pending";
-    const newPaymentStatus = allReturned ? "cancelled" : currentPaymentStatus;
+      const allReturned = deliveredItemIds.length === 0;
+      const newStatus = allReturned ? "returning" : "delivered";
+      const currentPaymentStatus = orderData?.paymentStatus || "pending";
+      const newPaymentStatus = allReturned ? "cancelled" : currentPaymentStatus;
 
-    t.update(orderRef, {
-      status: newStatus,
-      items: updatedItems,
-      deliveredAt: FieldValue.serverTimestamp(),
-      paymentStatus: newPaymentStatus,
-      tracking: {
+      t.update(orderRef, {
         status: newStatus,
-        logs: [
-          ...(orderData?.tracking?.logs || []),
-          { status: newStatus, timestamp: new Date() },
-        ],
-      },
+        items: updatedItems,
+        deliveredAt: FieldValue.serverTimestamp(),
+        paymentStatus: newPaymentStatus,
+        tracking: {
+          status: newStatus,
+          logs: [
+            ...(orderData?.tracking?.logs || []),
+            { status: newStatus, timestamp: new Date() },
+          ],
+        },
+      });
     });
-  });
 
-  return { success: true };
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in completeOrder:", error);
+    // Re-throw HttpsError as is, wrap others
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
+  }
 });
 
 // 2. razorpayCreateOrder
