@@ -1,12 +1,11 @@
-import { db } from "@/utils/firebase"; // Standardized path for all apps
-import { collection, addDoc, updateDoc, doc, serverTimestamp, runTransaction, getDoc, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { Order, OrderStatus } from "../types"; // Relative import assuming structure
+import { Firestore, collection, addDoc, updateDoc, doc, serverTimestamp, runTransaction, getDoc, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { Order, OrderStatus } from "../types";
 
 export const OrderService = {
     /**
      * Creates a new order in Firestore with mock location logic for demo purposes.
      */
-    async createOrder(userId: string, cartItems: any[], totalAmount: number, address: any) {
+    async createOrder(db: Firestore, userId: string, cartItems: any[], totalAmount: number, address: any) {
         // Mock Location Logic (Near the driver for demo)
         // Driver Mock Location: 19.1663, 72.8526 (Goregaon East)
         const mockLat = 19.1663 + (Math.random() * 0.01 - 0.005);
@@ -33,7 +32,7 @@ export const OrderService = {
     /**
      * Updates the status of an order.
      */
-    async updateStatus(orderId: string, status: OrderStatus) {
+    async updateStatus(db: Firestore, orderId: string, status: OrderStatus) {
         const orderRef = doc(db, "orders", orderId);
         await updateDoc(orderRef, { status });
     },
@@ -44,7 +43,7 @@ export const OrderService = {
     /**
      * Assigns a driver to an order using a transaction to prevent race conditions.
      */
-    async acceptOrder(orderId: string, driverId: string, driverName: string) {
+    async acceptOrder(db: Firestore, orderId: string, driverId: string, driverName: string) {
         const orderRef = doc(db, "orders", orderId);
 
         await runTransaction(db, async (transaction) => {
@@ -65,7 +64,7 @@ export const OrderService = {
         });
     },
 
-    async getOrderById(orderId: string): Promise<Order | null> {
+    async getOrderById(db: Firestore, orderId: string): Promise<Order | null> {
         try {
             const orderDoc = await getDoc(doc(db, "orders", orderId));
             if (orderDoc.exists()) {
@@ -78,7 +77,7 @@ export const OrderService = {
         }
     },
 
-    subscribeToUserOrders(userId: string, callback: (orders: Order[]) => void) {
+    subscribeToUserOrders(db: Firestore, userId: string, callback: (orders: Order[]) => void) {
         const q = query(
             collection(db, "orders"),
             where("userId", "==", userId),
