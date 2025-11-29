@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "../../admin-dashboard"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../customer-app"
+		},
+		{
+			"path": "../../driver-app"
+		},
+		{
+			"path": "../../logs"
+		},
+		{
+			"path": "../../seed-data"
+		}
+	],
+	"settings": {}
+}

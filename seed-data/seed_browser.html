@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FlashFit - Auto Seeder</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 40px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1a73e8;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e8f0fe;
+            color: #1967d2;
+        }
+
+        .error {
+            background: #fce8e6 !important;
+            color: #c5221f !important;
+        }
+
+        .success {
+            background: #e6f4ea !important;
+            color: #137333 !important;
+        }
+
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background: #1557b0;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🌱 FlashFit Auto Seeder</h1>
+        <p>Click the button below to wipe old products and add the new "Trendy Clothes" collection.</p>
+
+        <button id="seedBtn" onclick="seedDatabase()">🚀 Seed Database Now</button>
+
+        <div id="status">Waiting to start...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, writeBatch, doc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCcO8q6G08EPk047pncwT0UdJLiDB3WJ6I",
+            authDomain: "studio-847805730-4f392.firebaseapp.com",
+            projectId: "studio-847805730-4f392",
+            storageBucket: "studio-847805730-4f392.firebasestorage.app",
+            messagingSenderId: "497323679456",
+            appId: "1:497323679456:web:fef3f0e6e3af943969ba85"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const products = [
+            {
+                title: "Oversized Street Tee",
+                price: 1299,
+                category: "oversized",
+                image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500",
+                stock: 50,
+                pincodes: ["400059"],
+                description: "Premium cotton oversized t-shirt for street look",
+                createdAt: new Date()
+            },
+            {
+                title: "Cargo Parachute Pants",
+                price: 2499,
+                category: "streetwear",
+                image: "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=500",
+                stock: 40,
+                pincodes: ["400059"],
+                description: "Trendy parachute pants with multiple pockets",
+                createdAt: new Date()
+            },
+            {
+                title: "Pump Cover Hoodie",
+                price: 1999,
+                category: "gym_fits",
+                image: "https://images.unsplash.com/photo-1556906781-9a412961d28c?w=500",
+                stock: 60,
+                pincodes: ["400059"],
+                description: "Perfect pump cover for your gym sessions",
+                createdAt: new Date()
+            },
+            {
+                title: "Compression Gym Tee",
+                price: 899,
+                category: "gym_fits",
+                image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=500",
+                stock: 100,
+                pincodes: ["400059"],
+                description: "Muscle-fit compression tee for training",
+                createdAt: new Date()
+            },
+            {
+                title: "Varsity Jacket",
+                price: 3999,
+                category: "streetwear",
+                image: "https://images.unsplash.com/photo-1551488852-0801752aa8e7?w=500",
+                stock: 25,
+                pincodes: ["400059"],
+                description: "Classic varsity jacket with premium embroidery",
+                createdAt: new Date()
+            },
+            {
+                title: "Baggy Denim Jeans",
+                price: 2999,
+                category: "oversized",
+                image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500",
+                stock: 35,
+                pincodes: ["400059"],
+                description: "Vintage wash baggy denim jeans",
+                createdAt: new Date()
+            }
+        ];
+
+        window.seedDatabase = async () => {
+            const btn = document.getElementById('seedBtn');
+            const status = document.getElementById('status');
+
+            try {
+                btn.disabled = true;
+                status.textContent = "⏳ Deleting old products...";
+                status.className = "";
+
+                // 1. Delete old products
+                const snapshot = await getDocs(collection(db, "products"));
+                const deleteBatch = writeBatch(db);
+                snapshot.docs.forEach((doc) => {
+                    deleteBatch.delete(doc.ref);
+                });
+                await deleteBatch.commit();
+
+                status.textContent = "⏳ Adding new Trendy Clothes...";
+
+                // 2. Add new products
+                const addBatch = writeBatch(db);
+                products.forEach((product) => {
+                    const newRef = doc(collection(db, "products"));
+                    addBatch.set(newRef, product);
+                });
+                await addBatch.commit();
+
+                status.textContent = "✅ Success! Database seeded with Trendy Clothes.";
+                status.className = "success";
+            } catch (error) {
+                console.error(error);
+                status.textContent = "❌ Error: " + error.message;
+                status.className = "error";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+
+</html>

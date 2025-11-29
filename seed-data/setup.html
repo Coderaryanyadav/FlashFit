@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FlashFit - Complete Setup Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #764ba2;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #667eea;
+            margin-top: 25px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .field-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .field-table th,
+        .field-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .field-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .field-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        ol {
+            line-height: 2;
+        }
+
+        a {
+            color: #667eea;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>⚡ FlashFit Complete Setup Guide</h1>
+        <p style="text-align: center; font-size: 18px; color: #666;">Follow these steps to set up your Firebase database
+        </p>
+
+        <!-- STEP 1 -->
+        <h2>Step 1: Create User Accounts (2 minutes)</h2>
+        <div class="step">
+            <ol>
+                <li>Open <a
+                        href="https://console.firebase.google.com/project/studio-847805730-4f392/authentication/users"
+                        target="_blank">Firebase Authentication</a></li>
+                <li>Click "<strong>Add User</strong>" button</li>
+                <li>Create these 3 accounts:</li>
+            </ol>
+
+            <table class="field-table">
+                <tr>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>admin@flashfit.com</td>
+                    <td>admin123456</td>
+                    <td>Admin Dashboard Login</td>
+                </tr>
+                <tr>
+                    <td>driver@flashfit.com</td>
+                    <td>driver123456</td>
+                    <td>Driver App Login</td>
+                </tr>
+                <tr>
+                    <td>test@flashfit.com</td>
+                    <td>test123456</td>
+                    <td>Customer App Login</td>
+                </tr>
+            </table>
+
+            <div class="warning">
+                ⚠️ <strong>IMPORTANT:</strong> After creating <code>driver@flashfit.com</code>, <strong>COPY THE
+                    UID</strong> (long string like LGXD4ncPvFOVW1AxCI87ao0MeIl2). You'll need it in Step 3!
+            </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <h2>Step 2: Add Products (3 minutes)</h2>
+        <div class="step">
+            <ol>
+                <li>Open <a
+                        href="https://console.firebase.google.com/project/studio-847805730-4f392/firestore/databases/-default-/data"
+                        target="_blank">Firestore Database</a></li>
+                <li>Click "<strong>+ Start collection</strong>" (or "+ Add collection" if you already have some)</li>
+                <li>Collection ID: <code>products</code> → Click <strong>Next</strong></li>
+                <li>Add Document ID: <strong>Auto-ID</strong></li>
+                <li>Add these fields for <strong>Product 1</strong>:</li>
+            </ol>
+
+            <table class="field-table">
+                <tr>
+                    <th>Field Name</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>string</td>
+                    <td>Oversized Street Tee</td>
+                </tr>
+                <tr>
+                    <td>price</td>
+                    <td>number</td>
+                    <td>1299</td>
+                </tr>
+                <tr>
+                    <td>category</td>
+                    <td>string</td>
+                    <td>oversized</td>
+                </tr>
+                <tr>
+                    <td>image</td>
+                    <td>string</td>
+                    <td>https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500</td>
+                </tr>
+                <tr>
+                    <td>stock</td>
+                    <td>number</td>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <td>pincodes</td>
+                    <td>array</td>
+                    <td>["400059"]</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>string</td>
+                    <td>Premium cotton oversized t-shirt for street look</td>
+                </tr>
+                <tr>
+                    <td>createdAt</td>
+                    <td>timestamp</td>
+                    <td>(auto-generated)</td>
+                </tr>
+            </table>
+
+            <div class="info">
+                💡 <strong>Repeat Step 2</strong> to add more products (optional but recommended):
+                <ul>
+                    <li>Cargo Parachute Pants - ₹2499</li>
+                    <li>Pump Cover Hoodie - ₹1999</li>
+                    <li>Compression Gym Tee - ₹899</li>
+                    <li>Varsity Jacket - ₹3999</li>
+                    <li>Baggy Denim Jeans - ₹2999</li>
+                </ul>
+                Use the same structure, just change title, price, category, image, and stock.
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <h2>Step 3: Create Driver Document (1 minute) 🔴 CRITICAL</h2>
+        <div class="step">
+            <div class="warning">
+                ⚠️ <strong>THIS IS WHY DRIVER APP IS BLANK!</strong> This step is REQUIRED for driver app to work.
+            </div>
+
+            <ol>
+                <li>Still in <a
+                        href="https://console.firebase.google.com/project/studio-847805730-4f392/firestore/databases/-default-/data"
+                        target="_blank">Firestore Database</a></li>
+                <li>Click "<strong>+ Start collection</strong>"</li>
+                <li>Collection ID: <code>drivers</code> → Click <strong>Next</strong></li>
+                <li><strong>Document ID:</strong> Paste the driver UID you copied in Step 1</li>
+                <li>If you didn't copy it, use this one:</li>
+            </ol>
+
+            <div class="code">
+                LGXD4ncPvFOVW1AxCI87ao0MeIl2
+            </div>
+
+            <p><strong>5. Add these fields:</strong></p>
+
+            <table class="field-table">
+                <tr>
+                    <th>Field Name</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td>string</td>
+                    <td>John Driver</td>
+                </tr>
+                <tr>
+                    <td>phone</td>
+                    <td>string</td>
+                    <td>9876543210</td>
+                </tr>
+                <tr>
+                    <td>isOnline</td>
+                    <td>boolean</td>
+                    <td>false (unchecked)</td>
+                </tr>
+                <tr>
+                    <td>currentLocation</td>
+                    <td>map</td>
+                    <td>See below ↓</td>
+                </tr>
+            </table>
+
+            <p><strong>6. For the <code>currentLocation</code> map, add these sub-fields:</strong></p>
+            <ul>
+                <li>Click on <code>currentLocation</code> → Add field inside the map:</li>
+                <li>Field: <code>lat</code> | Type: number | Value: <code>19.1663</code></li>
+                <li>Field: <code>lng</code> | Type: number | Value: <code>72.8526</code></li>
+            </ul>
+
+            <p><strong>7. Click <strong>Save</strong></strong></p>
+        </div>
+
+        <!-- STEP 4 -->
+        <h2>Step 4: Test Your Apps! 🎉</h2>
+        <div class="success">
+            <h3>Everything is ready! Test these apps:</h3>
+
+            <p><strong>1. Customer App:</strong> <a href="http://localhost:3000"
+                    target="_blank">http://localhost:3000</a></p>
+            <ul>
+                <li>Should show products you added</li>
+                <li>Login: test@flashfit.com / test123456</li>
+                <li>Try: Browse → Add to Cart → Checkout → Place Order</li>
+            </ul>
+
+            <p><strong>2. Admin Dashboard:</strong> <a href="http://localhost:3001"
+                    target="_blank">http://localhost:3001</a></p>
+            <ul>
+                <li>Login: admin@flashfit.com / admin123456</li>
+                <li>Check: Products page, Orders page</li>
+            </ul>
+
+            <p><strong>3. Driver App:</strong> <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>
+            </p>
+            <ul>
+                <li>Login: driver@flashfit.com / driver123456</li>
+                <li>Toggle: OFFLINE → ONLINE</li>
+                <li>Wait for orders from customer app!</li>
+            </ul>
+        </div>
+
+        <h2>🔍 Troubleshooting</h2>
+        <div class="info">
+            <p><strong>Customer App shows no products:</strong></p>
+            <ul>
+                <li>Check products have <code>pincodes: ["400059"]</code></li>
+                <li>Verify pincode selector in app shows 400059</li>
+            </ul>
+
+            <p><strong>Driver App still blank:</strong></p>
+            <ul>
+                <li>Check <code>drivers</code> collection exists</li>
+                <li>Document ID must match driver user UID exactly</li>
+                <li>Try logging out and back in</li>
+            </ul>
+
+            <p><strong>Admin Dashboard stuck loading:</strong></p>
+            <ul>
+                <li>Clear browser cache</li>
+                <li>Try incognito/private mode</li>
+            </ul>
+        </div>
+
+        <div class="success" style="text-align: center; margin-top: 40px;">
+            <h2>🚀 Ready to Test!</h2>
+            <p>Once you complete Steps 1-3, refresh all your apps and start testing!</p>
+        </div>
+    </div>
+</body>
+
+</html>

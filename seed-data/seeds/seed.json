@@ -1,0 +1,433 @@
+{
+  "stores": [
+    {
+      "id": "store1",
+      "name": "FlashFit Fashion Hub",
+      "address": "123 Main Street, Downtown, Mumbai 400001",
+      "description": "Premium clothing store offering latest fashion trends",
+      "location": { "lat": 19.0760, "lng": 72.8777 },
+      "bannerImage": "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800",
+      "active": true
+    },
+    {
+      "id": "store2",
+      "name": "Urban Threads",
+      "address": "456 Fashion Avenue, Bandra, Mumbai 400050",
+      "description": "Contemporary casual wear for men and women",
+      "location": { "lat": 19.0596, "lng": 72.8295 },
+      "bannerImage": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800",
+      "active": true
+    },
+    {
+      "id": "store3",
+      "name": "Style Express",
+      "address": "789 Shopping Mall, Andheri, Mumbai 400053",
+      "description": "Fast fashion for the modern lifestyle",
+      "location": { "lat": 19.1136, "lng": 72.8697 },
+      "bannerImage": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800",
+      "active": true
+    },
+    {
+      "id": "store4",
+      "name": "Trendy Wardrobe",
+      "address": "321 High Street, Worli, Mumbai 400018",
+      "description": "Elegant and trendy clothing collection",
+      "location": { "lat": 19.0176, "lng": 72.8262 },
+      "bannerImage": "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800",
+      "active": true
+    },
+    {
+      "id": "store5",
+      "name": "Chic Closet",
+      "address": "654 Designer Boulevard, Powai, Mumbai 400076",
+      "description": "Luxury fashion and designer wear",
+      "location": { "lat": 19.1164, "lng": 72.9047 },
+      "bannerImage": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800",
+      "active": true
+    }
+  ],
+  "products": [
+    {
+      "id": "prod1",
+      "storeId": "store1",
+      "name": "Classic White T-Shirt",
+      "description": "Comfortable 100% cotton white t-shirt perfect for everyday wear",
+      "price": 499,
+      "imageUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+      "category": "T-Shirts",
+      "inStock": true,
+      "deliveryTimeEstimate": 45
+    },
+    {
+      "id": "prod2",
+      "storeId": "store1",
+      "name": "Blue Denim Jeans",
+      "description": "Slim fit denim jeans with stretch for comfort",
+      "price": 1299,
+      "imageUrl": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400",
+      "category": "Jeans",
+      "inStock": true,
+      "deliveryTimeEstimate": 50
+    },
+    {
+      "id": "prod3",
+      "storeId": "store1",
+      "name": "Black Leather Jacket",
+      "description": "Stylish black leather jacket for a bold look",
+      "price": 3499,
+      "imageUrl": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400",
+      "category": "Jackets",
+      "inStock": true,
+      "deliveryTimeEstimate": 55
+    },
+    {
+      "id": "prod4",
+      "storeId": "store1",
+      "name": "Striped Polo Shirt",
+      "description": "Casual polo shirt with classic stripes",
+      "price": 799,
+      "imageUrl": "https://images.unsplash.com/photo-1516914943479-89db7d9ae7f2?w=400",
+      "category": "Shirts",
+      "inStock": true,
+      "deliveryTimeEstimate": 45
+    },
+    {
+      "id": "prod5",
+      "storeId": "store2",
+      "name": "Athletic Shorts",
+      "description": "Lightweight athletic shorts perfect for workouts",
+      "price": 599,
+      "imageUrl": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400",
+      "category": "Shorts",
+      "inStock": true,
+      "deliveryTimeEstimate": 40
+    },
+    {
+      "id": "prod6",
+      "storeId": "store2",
+      "name": "Hoodie with Zipper",
+      "description": "Warm and cozy hoodie with front zipper",
+      "price": 1599,
+      "imageUrl": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400",
+      "category": "Hoodies",
+      "inStock": true,
+      "deliveryTimeEstimate": 50
+    },
+    {
+      "id": "prod7",
+      "storeId": "store2",
+      "name": "Summer Dress",
+      "description": "Elegant floral summer dress for women",
+      "price": 1899,
+      "imageUrl": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400",
+      "category": "Dresses",
+      "inStock": true,
+      "deliveryTimeEstimate": 45
+    },
+    {
+      "id": "prod8",
+      "storeId": "store2",
+      "name": "Casual Sneakers",
+      "description": "Comfortable sneakers for daily wear",
+      "price": 2299,
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+      "category": "Footwear",
+      "inStock": true,
+      "deliveryTimeEstimate": 50
+    },
+    {
+      "id": "prod9",
+      "storeId": "store3",
+      "name": "Formal Shirt",
+      "description": "Crisp white formal shirt for office wear",
+      "price": 999,
+      "imageUrl": "https://images.unsplash.com/photo-1594938291221-94f18cbb566b?w=400",
+      "category": "Shirts",
+      "inStock": true,
+      "deliveryTimeEstimate": 48
+    },
+    {
+      "id": "prod10",
+      "storeId": "store3",
+      "name": "Chinos Pants",
+      "description": "Classic khaki chinos for smart casual look",
+      "price": 1199,
+      "imageUrl": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400",
+      "category": "Pants",
+      "inStock": true,
+      "deliveryTimeEstimate": 50
+    },
+    {
+      "id": "prod11",
+      "storeId": "store3",
+      "name": "Knit Sweater",
+      "description": "Warm knitted sweater for winter season",
+      "price": 1799,
+      "imageUrl": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400",
+      "category": "Sweaters",
+      "inStock": true,
+      "deliveryTimeEstimate": 52
+    },
+    {
+      "id": "prod12",
+      "storeId": "store3",
+      "name": "Baseball Cap",
+      "description": "Stylish baseball cap with logo",
+      "price": 399,
+      "imageUrl": "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400",
+      "category": "Accessories",
+      "inStock": true,
+      "deliveryTimeEstimate": 35
+    },
+    {
+      "id": "prod13",
+      "storeId": "store4",
+      "name": "Silk Scarf",
+      "description": "Luxurious silk scarf in various patterns",
+      "price": 1299,
+      "imageUrl": "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=400",
+      "category": "Accessories",
+      "inStock": true,
+      "deliveryTimeEstimate": 40
+    },
+    {
+      "id": "prod14",
+      "storeId": "store4",
+      "name": "Wool Coat",
+      "description": "Warm wool coat for winter",
+      "price": 4599,
+      "imageUrl": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=400",
+      "category": "Coats",
+      "inStock": true,
+      "deliveryTimeEstimate": 58
+    },
+    {
+      "id": "prod15",
+      "storeId": "store4",
+      "name": "Evening Gown",
+      "description": "Elegant evening gown for special occasions",
+      "price": 5999,
+      "imageUrl": "https://images.unsplash.com/photo-1566479179817-4bcfbb4f009c?w=400",
+      "category": "Dresses",
+      "inStock": true,
+      "deliveryTimeEstimate": 55
+    },
+    {
+      "id": "prod16",
+      "storeId": "store4",
+      "name": "Designer Handbag",
+      "description": "Premium designer handbag for women",
+      "price": 3499,
+      "imageUrl": "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400",
+      "category": "Accessories",
+      "inStock": true,
+      "deliveryTimeEstimate": 45
+    },
+    {
+      "id": "prod17",
+      "storeId": "store5",
+      "name": "Tuxedo Suit",
+      "description": "Classic black tuxedo for formal events",
+      "price": 8999,
+      "imageUrl": "https://images.unsplash.com/photo-1594938298606-c5a78614975a?w=400",
+      "category": "Suits",
+      "inStock": true,
+      "deliveryTimeEstimate": 60
+    },
+    {
+      "id": "prod18",
+      "storeId": "store5",
+      "name": "Cashmere Scarf",
+      "description": "Soft cashmere scarf for luxury feel",
+      "price": 2499,
+      "imageUrl": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
+      "category": "Accessories",
+      "inStock": true,
+      "deliveryTimeEstimate": 42
+    },
+    {
+      "id": "prod19",
+      "storeId": "store5",
+      "name": "Luxury Watch",
+      "description": "Premium timepiece for special occasions",
+      "price": 12499,
+      "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+      "category": "Accessories",
+      "inStock": true,
+      "deliveryTimeEstimate": 50
+    },
+    {
+      "id": "prod20",
+      "storeId": "store5",
+      "name": "Designer Sunglasses",
+      "description": "Stylish designer sunglasses with UV protection",
+      "price": 3499,
+      "imageUrl": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400",
+      "category": "Accessories",
+      "inStock": true,
+      "deliveryTimeEstimate": 38
+    }
+  ],
+  "drivers": [
+    {
+      "id": "driver1",
+      "userId": "user_driver1",
+      "isOnline": false,
+      "currentLocation": { "lat": 19.0760, "lng": 72.8777 },
+      "vehicleNo": "MH01AB1234",
+      "currentOrderId": null,
+      "updatedAt": 0
+    },
+    {
+      "id": "driver2",
+      "userId": "user_driver2",
+      "isOnline": false,
+      "currentLocation": { "lat": 19.0596, "lng": 72.8295 },
+      "vehicleNo": "MH01CD5678",
+      "currentOrderId": null,
+      "updatedAt": 0
+    },
+    {
+      "id": "driver3",
+      "userId": "user_driver3",
+      "isOnline": false,
+      "currentLocation": { "lat": 19.1136, "lng": 72.8697 },
+      "vehicleNo": "MH01EF9012",
+      "currentOrderId": null,
+      "updatedAt": 0
+    }
+  ],
+  "orders": [
+    {
+      "id": "order1",
+      "customerId": "customer1",
+      "storeId": "store1",
+      "items": [
+        { "id": "prod1", "name": "Classic White T-Shirt", "price": 499, "quantity": 2 }
+      ],
+      "status": "delivered",
+      "total": 998,
+      "createdAt": 0,
+      "address": "123 Customer Street, Mumbai",
+      "phone": "+911234567890"
+    },
+    {
+      "id": "order2",
+      "customerId": "customer2",
+      "storeId": "store2",
+      "items": [
+        { "id": "prod5", "name": "Athletic Shorts", "price": 599, "quantity": 1 }
+      ],
+      "status": "on_the_way",
+      "total": 599,
+      "createdAt": 0,
+      "address": "456 Buyer Lane, Mumbai",
+      "phone": "+911234567891"
+    },
+    {
+      "id": "order3",
+      "customerId": "customer3",
+      "storeId": "store1",
+      "items": [
+        { "id": "prod2", "name": "Blue Denim Jeans", "price": 1299, "quantity": 1 }
+      ],
+      "status": "picked_up",
+      "total": 1299,
+      "createdAt": 0,
+      "address": "789 Shopper Road, Mumbai",
+      "phone": "+911234567892"
+    },
+    {
+      "id": "order4",
+      "customerId": "customer4",
+      "storeId": "store3",
+      "items": [
+        { "id": "prod9", "name": "Formal Shirt", "price": 999, "quantity": 1 },
+        { "id": "prod10", "name": "Chinos Pants", "price": 1199, "quantity": 1 }
+      ],
+      "status": "assigned",
+      "total": 2198,
+      "createdAt": 0,
+      "address": "321 Client Avenue, Mumbai",
+      "phone": "+911234567893"
+    },
+    {
+      "id": "order5",
+      "customerId": "customer5",
+      "storeId": "store2",
+      "items": [
+        { "id": "prod6", "name": "Hoodie with Zipper", "price": 1599, "quantity": 1 }
+      ],
+      "status": "pending",
+      "total": 1599,
+      "createdAt": 0,
+      "address": "654 User Street, Mumbai",
+      "phone": "+911234567894"
+    },
+    {
+      "id": "order6",
+      "customerId": "customer6",
+      "storeId": "store4",
+      "items": [
+        { "id": "prod13", "name": "Silk Scarf", "price": 1299, "quantity": 1 }
+      ],
+      "status": "delivered",
+      "total": 1299,
+      "createdAt": 0,
+      "address": "987 Buyer Boulevard, Mumbai",
+      "phone": "+911234567895"
+    },
+    {
+      "id": "order7",
+      "customerId": "customer7",
+      "storeId": "store5",
+      "items": [
+        { "id": "prod17", "name": "Tuxedo Suit", "price": 8999, "quantity": 1 }
+      ],
+      "status": "delivered",
+      "total": 8999,
+      "createdAt": 0,
+      "address": "147 Luxury Lane, Mumbai",
+      "phone": "+911234567896"
+    },
+    {
+      "id": "order8",
+      "customerId": "customer8",
+      "storeId": "store3",
+      "items": [
+        { "id": "prod11", "name": "Knit Sweater", "price": 1799, "quantity": 1 }
+      ],
+      "status": "cancelled",
+      "total": 1799,
+      "createdAt": 0,
+      "address": "258 Winter Road, Mumbai",
+      "phone": "+911234567897"
+    },
+    {
+      "id": "order9",
+      "customerId": "customer9",
+      "storeId": "store1",
+      "items": [
+        { "id": "prod3", "name": "Black Leather Jacket", "price": 3499, "quantity": 1 }
+      ],
+      "status": "pending",
+      "total": 3499,
+      "createdAt": 0,
+      "address": "369 Style Street, Mumbai",
+      "phone": "+911234567898"
+    },
+    {
+      "id": "order10",
+      "customerId": "customer10",
+      "storeId": "store4",
+      "items": [
+        { "id": "prod14", "name": "Wool Coat", "price": 4599, "quantity": 1 }
+      ],
+      "status": "delivered",
+      "total": 4599,
+      "createdAt": 0,
+      "address": "741 Fashion Avenue, Mumbai",
+      "phone": "+911234567899"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isDriver() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'driver';
+    }
+
+    // Users: Users can read/write their own data, BUT cannot change role
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'customer'; // Only create as customer
+      allow update: if isAdmin() || (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'totalOrders']));
+    }
+
+    // Drivers: Public read (for basic info), write only by owner or admin
+    // Verification fields protected
+    match /drivers/{driverId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(driverId);
+      allow update: if (isOwner(driverId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVerified', 'score', 'earnings'])) || isAdmin();
+    }
+
+    // Stores: Public read, Admin write
+    match /stores/{storeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Products: Public read, Admin write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Orders: 
+    // - Users can create and read their own orders
+    // - Drivers can read orders assigned to them
+    // - Admin can do anything
+    // - Payment status cannot be tampered by user
+    match /orders/{orderId} {
+      allow create: if isAuthenticated() 
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.paymentStatus == 'pending';
+      
+      // Read: Users (own), Drivers (assigned OR open), Admin (all)
+      allow read: if isOwner(resource.data.userId) 
+                  || (isDriver() && (resource.data.driverId == request.auth.uid || resource.data.status in ['placed', 'pending'])) 
+                  || isAdmin();
+                  
+      allow update: if isAdmin() 
+                    // User: Can cancel or update non-critical fields
+                    || (isOwner(resource.data.userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentStatus', 'totalAmount', 'driverId']))
+                    // Driver: 
+                    || (isDriver() && (
+                        // Case 1: Accepting an open order (Claiming it)
+                        (resource.data.status in ['placed', 'pending'] 
+                         && request.resource.data.driverId == request.auth.uid 
+                         && request.resource.data.status == 'assigned')
+                        ||
+                        // Case 2: Driver Workflow Transitions
+                        (resource.data.driverId == request.auth.uid 
+                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'tracking', 'lastUpdated'])
+                         && request.resource.data.status in ['picked_up', 'delivered', 'returning', 'warehouse_reached']
+                         // Prevent backward transitions or invalid jumps (Basic check)
+                         && (
+                           (resource.data.status == 'assigned' && request.resource.data.status == 'picked_up') ||
+                           (resource.data.status == 'picked_up' && request.resource.data.status == 'delivered') ||
+                           (resource.data.status == 'delivered' && request.resource.data.status == 'returning') ||
+                           (resource.data.status == 'returning' && request.resource.data.status == 'warehouse_reached')
+                         )
+                        )
+                       ));
+    }
+
+    // Driver Locations: 
+    // - Drivers write their own
+    // - Admins can read all
+    // - Customers can read ONLY if they have an active order with this driver
+    match /driverLocations/{driverId} {
+      allow write: if isOwner(driverId);
+      allow read: if isOwner(driverId) 
+                  || isAdmin()
+                  // Complex query: Check if there is an active order where driverId matches and userId matches
+                  // Note: This requires a composite index on orders collection
+                  || (isAuthenticated() && 
+                      get(/databases/$(database)/documents/orders/$(request.auth.uid)).data.driverId == driverId &&
+                      get(/databases/$(database)/documents/orders/$(request.auth.uid)).data.status in ['picked_up', 'returning', 'assigned']);
+    }
+
+    // Messages: Users read/write their own threads
+    match /messages/{messageId} {
+      allow create: if isAuthenticated();
+      allow read: if resource.data.userId == request.auth.uid || isAdmin();
+    }
+
+    // Coupons: Public read, Admin write
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Analytics: Admin only
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Reviews: Users can create, read approved only, admin can approve/delete
+    match /reviews/{reviewId} {
+      allow create: if isAuthenticated() 
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.approved == false;
+      allow read: if resource.data.approved == true || isAdmin();
+      allow update: if isAdmin(); // Only admin can approve
+      allow delete: if isAdmin();
+    }
+
+    // User Addresses: Users can manage their own addresses
+    match /users/{userId}/addresses/{addressId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
