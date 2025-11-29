@@ -605,7 +605,7 @@ export default function DriverHomePage() {
                     <DialogHeader>
                         <DialogTitle className="text-xl font-bold">Confirm Delivery</DialogTitle>
                         <DialogDescription className="text-gray-400">
-                            Ask customer for the OTP. Select items delivered.
+                            Select items delivered. Unselected items will be marked as returned.
                         </DialogDescription>
                     </DialogHeader>
 
