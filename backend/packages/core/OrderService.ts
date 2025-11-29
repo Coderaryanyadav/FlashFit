@@ -1,5 +1,25 @@
 import { Firestore, collection, addDoc, updateDoc, doc, serverTimestamp, runTransaction, getDoc, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { Order, OrderStatus } from "../types";
+
+export type OrderStatus = 'pending' | 'placed' | 'confirmed' | 'assigned' | 'picked_up' | 'delivered' | 'cancelled' | 'completed' | 'warehouse_reached' | 'returning';
+
+export interface Order {
+    id: string;
+    userId: string;
+    items: any[];
+    totalAmount: number;
+    status: OrderStatus;
+    shippingAddress?: any;
+    paymentId?: string;
+    driverId?: string;
+    driverName?: string;
+    driverPhone?: string;
+    paymentMethod?: string;
+    paymentStatus?: string;
+    rating?: number;
+    deliveryOtp?: string;
+    createdAt: any;
+    [key: string]: any;
+}
 
 export const OrderService = {
     /**
