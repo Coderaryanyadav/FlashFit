@@ -106,7 +106,7 @@ export default function OrdersPage() {
             cell: ({ row }) => {
                 const order = row.original;
                 // If order is returned or cancelled, show "Returned" status and disable verification
-                if (order.status === 'returning' || order.status === 'cancelled') {
+                if ((order.status as string) === 'returning' || (order.status as string) === 'cancelled') {
                     return (
                         <span className="text-[10px] text-red-500 font-bold uppercase flex items-center gap-1">
                             <XCircle className="h-3 w-3" /> Returned
@@ -120,8 +120,8 @@ export default function OrdersPage() {
                             <span className="text-[10px] text-green-500 font-bold uppercase flex items-center gap-1">
                                 <CheckCircle className="h-3 w-3" /> Verified
                             </span>
-                            {order.paymentVerifiedBy && (
-                                <span className="text-[10px] text-gray-500">by {order.paymentVerifiedBy}</span>
+                            {(order as any).paymentVerifiedBy && (
+                                <span className="text-[10px] text-gray-500">by {(order as any).paymentVerifiedBy}</span>
                             )}
                         </div>
                     );
@@ -214,7 +214,7 @@ export default function OrdersPage() {
                                     </DropdownMenuSubContent>
                                 </DropdownMenuSub>
                                 <DropdownMenuSeparator />
-                                {order.paymentStatus !== 'paid' && order.status !== 'returning' && order.status !== 'cancelled' && (
+                                {order.paymentStatus !== 'paid' && (order.status as string) !== 'returning' && (order.status as string) !== 'cancelled' && (
                                     <DropdownMenuItem onClick={async () => {
                                         if (confirm("Confirm payment received for this order?")) {
                                             try {
