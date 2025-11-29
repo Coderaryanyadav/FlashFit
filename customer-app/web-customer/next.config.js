@@ -2,6 +2,7 @@
 const nextConfig = {
   // Force restart 1
   reactStrictMode: true,
+  transpilePackages: ['@flashfit/core'],
   images: {
     remotePatterns: [
       {

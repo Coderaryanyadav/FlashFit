@@ -40,7 +40,7 @@ export interface Location {
     address?: string;
 }
 
-export type OrderStatus = 'placed' | 'pending' | 'assigned' | 'picked_up' | 'delivered' | 'cancelled';
+export type OrderStatus = 'pending' | 'placed' | 'confirmed' | 'assigned' | 'picked_up' | 'delivered' | 'cancelled' | 'completed' | 'warehouse_reached' | 'returning';
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface Order {
