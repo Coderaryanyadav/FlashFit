@@ -229,7 +229,8 @@ class OrderService {
                 throw new functions.https.HttpsError("not-found", "Order not found");
             }
             const orderData = orderDoc.data();
-            // Security Check: Ensure caller is the assigned driver (or we could check for admin role here too if we had user role context)
+            // Security Check: Ensure caller is the assigned driver
+            // (or we could check for admin role here too if we had user role context)
             // For now, if the caller matches the driverId, allow.
             // If not, we might block, BUT admins also use this.
             // Since we don't have easy admin check inside Service without fetching User doc,
@@ -243,13 +244,13 @@ class OrderService {
                     throw new functions.https.HttpsError("permission-denied", "You are not authorized to update this order");
                 }
             }
-            t.update(orderRef, Object.assign(Object.assign({ status, updatedAt: firestore_1.FieldValue.serverTimestamp() }, (status === 'delivered' ? { deliveredAt: firestore_1.FieldValue.serverTimestamp() } : {})), { tracking: {
+            t.update(orderRef, Object.assign(Object.assign({ status, updatedAt: firestore_1.FieldValue.serverTimestamp() }, (status === "delivered" ? { deliveredAt: firestore_1.FieldValue.serverTimestamp() } : {})), { tracking: {
                     status: status,
                     logs: firestore_1.FieldValue.arrayUnion({
                         status,
                         timestamp: new Date(),
-                        description: description || `Order status updated to ${status}`
-                    })
+                        description: description || `Order status updated to ${status}`,
+                    }),
                 } }));
         });
         return { success: true };
@@ -287,11 +288,11 @@ class OrderService {
             t.update(orderRef, {
                 rating: rating,
                 review: review || null,
-                ratedAt: firestore_1.FieldValue.serverTimestamp()
+                ratedAt: firestore_1.FieldValue.serverTimestamp(),
             });
             t.update(driverRef, {
                 rating: newRating,
-                totalRatings: newTotalRatings
+                totalRatings: newTotalRatings,
             });
         });
         return { success: true };

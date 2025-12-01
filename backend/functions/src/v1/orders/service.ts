@@ -33,11 +33,17 @@ export class OrderService {
         if (productData?.stock && typeof productData.stock === "object") {
           // Size-based stock
           if (!item.size) {
-            throw new functions.https.HttpsError("invalid-argument", `Size selection is required for ${productData.title}`);
+            throw new functions.https.HttpsError(
+              "invalid-argument",
+              `Size selection is required for ${productData.title}`
+            );
           }
           const currentStock = productData.stock[item.size] || 0;
           if (currentStock < item.quantity) {
-            throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData.title} size ${item.size}`);
+            throw new functions.https.HttpsError(
+              "failed-precondition",
+              `Insufficient stock for ${productData.title} size ${item.size}`
+            );
           }
           t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
         } else {
@@ -194,7 +200,9 @@ export class OrderService {
       // If partial return on Online order -> Refund needed (Manual for now).
       // If partial return on COD -> Collect newFinalAmount.
       // For MVP, if delivered, we assume payment is collected/verified.
-      const newPaymentStatus = allReturned ? "cancelled" : (orderData?.paymentMethod === "COD" ? "paid" : currentPaymentStatus);
+      const newPaymentStatus = allReturned ? "cancelled" : (
+        orderData?.paymentMethod === "COD" ? "paid" : currentPaymentStatus
+      );
 
       // Credit Driver Earnings (Flat fee for MVP)
       const DELIVERY_FEE = 40;
@@ -241,7 +249,8 @@ export class OrderService {
 
       const orderData = orderDoc.data();
 
-      // Security Check: Ensure caller is the assigned driver (or we could check for admin role here too if we had user role context)
+      // Security Check: Ensure caller is the assigned driver
+      // (or we could check for admin role here too if we had user role context)
       // For now, if the caller matches the driverId, allow.
       // If not, we might block, BUT admins also use this.
       // Since we don't have easy admin check inside Service without fetching User doc,
@@ -263,15 +272,15 @@ export class OrderService {
       t.update(orderRef, {
         status,
         updatedAt: FieldValue.serverTimestamp(),
-        ...(status === 'delivered' ? { deliveredAt: FieldValue.serverTimestamp() } : {}),
+        ...(status === "delivered" ? { deliveredAt: FieldValue.serverTimestamp() } : {}),
         tracking: {
           status: status,
           logs: FieldValue.arrayUnion({
             status,
             timestamp: new Date(),
-            description: description || `Order status updated to ${status}`
-          })
-        }
+            description: description || `Order status updated to ${status}`,
+          }),
+        },
       });
     });
 
@@ -321,12 +330,12 @@ export class OrderService {
       t.update(orderRef, {
         rating: rating,
         review: review || null,
-        ratedAt: FieldValue.serverTimestamp()
+        ratedAt: FieldValue.serverTimestamp(),
       });
 
       t.update(driverRef, {
         rating: newRating,
-        totalRatings: newTotalRatings
+        totalRatings: newTotalRatings,
       });
     });
 
