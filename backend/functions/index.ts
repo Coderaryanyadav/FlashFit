@@ -10,205 +10,13 @@ export * from "./utils";
 admin.initializeApp();
 const db = admin.firestore();
 
-// 1. createOrder (Callable)
-export const createOrder = functions.https.onCall(async (data, context) => {
-  // CORS is handled automatically by onCall for callable functions
-  // But for raw HTTP requests we would need it.
-  // Since we are using onCall, the SDK handles CORS.
-  // However, let's ensure we are strict about auth.
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
-  }
+import * as ordersController from "./src/v1/orders/controller";
 
-  const { items, address, storeId, totalAmount } = data;
-  const userId = context.auth.uid;
-
-  if (!items || !address || !storeId || !totalAmount) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
-  }
-
-  // Calculate surge
-  const hour = new Date().getHours();
-  const surgeMultiplier = getSurgeMultiplier(hour);
-  const finalAmount = totalAmount * surgeMultiplier;
-
-  const orderRef = db.collection("orders").doc();
-  const deliveryOtp = generateOtp();
-  let maxDeliveryDays = 2;
-
-  // Transaction to handle inventory and order creation
-  await db.runTransaction(async (t) => {
-    // 1. Check and decrement stock
-    for (const item of items) {
-      const productRef = db.collection("products").doc(item.productId);
-      const productDoc = await t.get(productRef);
-
-      if (!productDoc.exists) {
-        throw new functions.https.HttpsError("not-found", `Product ${item.productId} not found`);
-      }
-
-      const productData = productDoc.data();
-
-      // Handle size-specific stock
-      if (item.size && productData?.stock && typeof productData.stock === 'object') {
-        const currentStock = productData.stock[item.size] || 0;
-        if (currentStock < item.quantity) {
-          throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData.title} size ${item.size}`);
-        }
-        t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
-      } else {
-        // Fallback to global stock (if stock is a number)
-        const currentStock = typeof productData?.stock === 'number' ? productData.stock : 0;
-        if (currentStock < item.quantity) {
-          throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData?.title}`);
-        }
-        // Only update if it's a number to avoid overwriting map with number
-        if (typeof productData?.stock === 'number') {
-          t.update(productRef, { stock: currentStock - item.quantity });
-        }
-      }
-
-      // Calculate delivery timeline based on category
-      let itemDeliveryDays = 2; // Default
-      if (productData?.category === 'furniture') itemDeliveryDays = 7;
-      else if (productData?.category === 'custom') itemDeliveryDays = 5;
-      else if (productData?.category === 'shaadi_closet') itemDeliveryDays = 4; // Special category from seed
-
-      if (itemDeliveryDays > maxDeliveryDays) maxDeliveryDays = itemDeliveryDays;
-    }
-
-    const expectedDeliveryDate = new Date();
-    expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
-
-    // 2. Create Order
-    const orderData = {
-      id: orderRef.id,
-      userId,
-      storeId,
-      items,
-      address,
-      status: "pending",
-      paymentStatus: "pending",
-      totalAmount: finalAmount,
-      surgeMultiplier,
-      deliveryOtp, // Store OTP
-      // Use server timestamp for now, or convert date. 
-      // Actually, FieldValue.serverTimestamp() is for "now". 
-      // I should use admin.firestore.Timestamp.fromDate(expectedDeliveryDate) but I don't have admin imported as such in this scope easily without checking imports.
-      // I'll use new Date() which Firestore SDK converts.
-      estimatedDeliveryAt: expectedDeliveryDate,
-      createdAt: FieldValue.serverTimestamp(),
-      tracking: {
-        status: "placed",
-        logs: [{ status: "placed", timestamp: new Date() }],
-      },
-    };
-
-    t.set(orderRef, orderData);
-  });
-
-  return { orderId: orderRef.id, finalAmount };
-});
-
-// 1.5 completeOrder
-export const completeOrder = functions.https.onCall(async (data, context) => {
-  try {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
-    }
-
-    const { orderId, otp, deliveredItemIds } = data;
-
-    if (!orderId) {
-      throw new functions.https.HttpsError("invalid-argument", "Missing orderId");
-    }
-
-    if (!Array.isArray(deliveredItemIds)) {
-      throw new functions.https.HttpsError("invalid-argument", "deliveredItemIds must be an array");
-    }
-
-    const orderRef = db.collection("orders").doc(orderId);
-
-    await db.runTransaction(async (t) => {
-      const orderDoc = await t.get(orderRef);
-      if (!orderDoc.exists) {
-        throw new functions.https.HttpsError("not-found", "Order not found");
-      }
-
-      const orderData = orderDoc.data();
-
-      // OTP check removed as per user request
-      // if (orderData?.deliveryOtp !== otp) {
-      //   throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
-      // }
-
-      const items = orderData?.items || [];
-      const updatedItems = items.map((item: any) => {
-        const itemId = item.id || item.productId;
-        const isDelivered = deliveredItemIds.includes(itemId);
-        return {
-          ...item,
-          status: isDelivered ? "delivered" : "returned",
-        };
-      });
-
-      const returnedItems = items.filter((item: any) => {
-        const itemId = item.id || item.productId;
-        return !deliveredItemIds.includes(itemId);
-      });
-
-      // Handle returns (increment stock)
-      for (const item of returnedItems) {
-        const productId = item.productId || item.id;
-        if (productId) {
-          const productRef = db.collection("products").doc(productId);
-          const productDoc = await t.get(productRef);
-          if (productDoc.exists) {
-            const productData = productDoc.data();
-            // Handle size-specific stock return
-            if (item.size && productData?.stock && typeof productData.stock === "object") {
-              const currentStock = productData.stock[item.size] || 0;
-              t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
-            } else {
-              const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
-              if (typeof productData?.stock === "number") {
-                t.update(productRef, { stock: currentStock + (item.quantity || 1) });
-              }
-            }
-          }
-        }
-      }
-
-      const allReturned = deliveredItemIds.length === 0;
-      const newStatus = allReturned ? "returning" : "delivered";
-      const currentPaymentStatus = orderData?.paymentStatus || "pending";
-      const newPaymentStatus = allReturned ? "cancelled" : currentPaymentStatus;
-
-      t.update(orderRef, {
-        status: newStatus,
-        items: updatedItems,
-        deliveredAt: FieldValue.serverTimestamp(),
-        paymentStatus: newPaymentStatus,
-        tracking: {
-          status: newStatus,
-          logs: [
-            ...(orderData?.tracking?.logs || []),
-            { status: newStatus, timestamp: new Date() },
-          ],
-        },
-      });
-    });
-
-    return { success: true };
-  } catch (error: any) {
-    console.error("Error in completeOrder:", error);
-    // Re-throw HttpsError as is, wrap others
-    if (error instanceof functions.https.HttpsError) {
-      throw error;
-    }
-    throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
-  }
-});
+// 1. Order Functions (Refactored to v1)
+export const createOrder = ordersController.createOrder;
+export const completeOrder = ordersController.completeOrder;
+export const updateOrderStatus = ordersController.updateOrderStatus;
+export const submitRating = ordersController.submitRating;
 
 // 2. razorpayCreateOrder
 export const razorpayCreateOrder = functions.https.onCall(async (data, context) => {
@@ -240,7 +48,7 @@ export const razorpayCreateOrder = functions.https.onCall(async (data, context) 
 });
 
 // 3. razorpayVerifySignature
-export const razorpayVerifySignature = functions.https.onCall(async (data, context) => {
+export const razorpayVerifySignature = functions.https.onCall(async (data, _context) => {
   const { orderId, paymentId, signature } = data;
 
   const keySecret = functions.config().razorpay?.key_secret || "secret_123";
@@ -273,7 +81,7 @@ export const autoAssignDriver = functions.firestore
   .document("orders/{orderId}")
   .onUpdate(async (change, context) => {
     const after = change.after.data();
-    const before = change.before.data();
+    const _before = change.before.data();
 
     // Trigger when:
     // 1. Order is newly created with COD (paymentStatus: 'pending', status: 'pending')
@@ -348,7 +156,7 @@ export const autoAssignDriver = functions.firestore
 // 5. onDriverLocationUpdate
 export const onDriverLocationUpdate = functions.firestore
   .document("drivers/{driverId}")
-  .onUpdate(async (change, context) => {
+  .onUpdate(async (change, _context) => {
     const after = change.after.data();
     const before = change.before.data();
 
@@ -370,7 +178,7 @@ export const onDriverLocationUpdate = functions.firestore
   });
 
 // 6. calculateSmartETA (Callable)
-export const calculateSmartETA = functions.https.onCall(async (data, context) => {
+export const calculateSmartETA = functions.https.onCall(async (data, _context) => {
   const { origin, destination } = data;
   // Mock ETA calculation
   const dist = calculateDistance(origin.lat, origin.lng, destination.lat, destination.lng);
@@ -379,7 +187,7 @@ export const calculateSmartETA = functions.https.onCall(async (data, context) =>
 });
 
 // 7. generateSurgePrice (Callable)
-export const generateSurgePrice = functions.https.onCall(async (data, context) => {
+export const generateSurgePrice = functions.https.onCall(async (_data, _context) => {
   const hour = new Date().getHours();
   return { multiplier: getSurgeMultiplier(hour) };
 });
@@ -388,7 +196,7 @@ export const generateSurgePrice = functions.https.onCall(async (data, context) =
 // Let's make it a trigger on order completion
 export const updateDriverScore = functions.firestore
   .document("orders/{orderId}")
-  .onUpdate(async (change, context) => {
+  .onUpdate(async (change, _context) => {
     const after = change.after.data();
     const before = change.before.data();
 
@@ -410,7 +218,7 @@ export const updateDriverScore = functions.firestore
   });
 
 // 9. storeSubscriptionHandler (Scheduled - daily)
-export const storeSubscriptionHandler = functions.pubsub.schedule("every 24 hours").onRun(async (context) => {
+export const storeSubscriptionHandler = functions.pubsub.schedule("every 24 hours").onRun(async (_context) => {
   const storesSnap = await db.collection("stores").where("subscriptionStatus", "==", "active").get();
   const now = new Date();
 
@@ -447,7 +255,7 @@ export const productEmbeddingJob = functions.firestore
 // 11. chatServer (Firestore-based)
 export const chatServer = functions.firestore
   .document("messages/{messageId}")
-  .onCreate(async (snap, context) => {
+  .onCreate(async (snap, _context) => {
     const msg = snap.data();
     if (msg.sender === "user") {
       // Auto-reply stub

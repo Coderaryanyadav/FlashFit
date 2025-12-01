@@ -78,10 +78,26 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const handleAddToCart = () => {
     if (!product) return;
 
-    if (!size) {
+    if (!size && (product.category === 'men' || product.category === 'women' || product.category === 'kids' || product.category === 'urban-style' || product.category === 'everyday')) {
       alert("Please select a size.");
       return;
     }
+
+    // Check stock for selected size
+    let availableStock = 0;
+    if (typeof product.stock === 'object') {
+      availableStock = (product.stock as Record<string, number>)[size] || 0;
+    } else {
+      availableStock = product.stock || 0;
+    }
+
+    if (quantity > availableStock) {
+      toast.error("Insufficient Stock", {
+        description: `Only ${availableStock} units available for size ${size}.`
+      });
+      return;
+    }
+
     addItem({
       id: product.id,
       title: product.title,
@@ -89,8 +105,9 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
       image: product.image,
       description: product.description || "",
       category: product.category || "Uncategorized",
-      stock: typeof product.stock === 'number' ? product.stock : (product.stock ? Object.values(product.stock).reduce((a, b) => a + b, 0) : 0)
+      stock: availableStock // Pass specific size stock to cart
     }, size, quantity);
+
     toast.success("Added to cart", {
       description: `${quantity} x ${product.title} (${size}) added to your cart.`,
       duration: 3000,
@@ -207,20 +224,35 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                   <button className="text-xs text-primary font-medium hover:underline">Size Chart</button>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {["S", "M", "L", "XL", "XXL"].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSize(s)}
-                      className={`h-14 w-14 rounded-xl border-2 flex items-center justify-center font-bold text-lg transition-all ${size === s
-                        ? "border-primary bg-primary text-black shadow-[0_0_20px_rgba(250,204,21,0.3)]"
-                        : "border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white bg-neutral-900/50"
-                        }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {["S", "M", "L", "XL", "XXL"].map((s) => {
+                    let isAvailable = true;
+                    if (typeof product.stock === 'object') {
+                      isAvailable = (product.stock as Record<string, number>)[s] > 0;
+                    } else if (typeof product.stock === 'number') {
+                      isAvailable = product.stock > 0;
+                    }
+
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => isAvailable && setSize(s)}
+                        disabled={!isAvailable}
+                        className={`h-14 w-14 rounded-xl border-2 flex items-center justify-center font-bold text-lg transition-all ${size === s
+                          ? "border-primary bg-primary text-black shadow-[0_0_20px_rgba(250,204,21,0.3)]"
+                          : isAvailable
+                            ? "border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white bg-neutral-900/50"
+                            : "border-neutral-900 text-neutral-700 bg-neutral-900 cursor-not-allowed opacity-50"
+                          }`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
                 {!size && <p className="text-xs text-red-500 mt-2 animate-pulse">Please select a size</p>}
+                {size && typeof product.stock === 'object' && (product.stock as Record<string, number>)[size] < 5 && (product.stock as Record<string, number>)[size] > 0 && (
+                  <p className="text-xs text-orange-500 mt-2 font-bold">Only {(product.stock as Record<string, number>)[size]} left!</p>
+                )}
               </div>
             )}
 

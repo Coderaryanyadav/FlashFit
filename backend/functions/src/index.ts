@@ -4,12 +4,12 @@ import { onDriverLocationUpdate } from "./v1/drivers/triggers";
 
 // Export v1 functions
 export {
-    createOrder,
-    completeOrder,
-    updateOrderStatus,
-    autoAssignDriver,
-    updateDriverScore,
-    onDriverLocationUpdate
+  createOrder,
+  completeOrder,
+  updateOrderStatus,
+  autoAssignDriver,
+  updateDriverScore,
+  onDriverLocationUpdate,
 };
 
 // Re-export legacy functions (temporarily until migrated)

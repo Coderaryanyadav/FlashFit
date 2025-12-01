@@ -25,7 +25,7 @@ export type Product = {
     price: number;
     category: string;
     image: string;
-    stock: number;
+    stock: number | Record<string, number>;
     createdAt: any;
     discount?: number;
     colors?: string[];
@@ -108,10 +108,23 @@ export default function ProductsPage() {
             accessorKey: "stock",
             header: "Stock",
             cell: ({ row }) => {
-                const stock = row.getValue("stock") as number;
+                const stockVal = row.getValue("stock");
+                let displayStock = 0;
+                let isSizeBased = false;
+
+                if (typeof stockVal === 'number') {
+                    displayStock = stockVal;
+                } else if (typeof stockVal === 'object' && stockVal !== null) {
+                    displayStock = Object.values(stockVal as Record<string, number>).reduce((a, b) => a + b, 0);
+                    isSizeBased = true;
+                }
+
                 return (
-                    <div className={`font-bold ${stock < 10 ? "text-red-400" : "text-green-400"}`}>
-                        {stock}
+                    <div className="flex flex-col">
+                        <div className={`font-bold ${displayStock < 10 ? "text-red-400" : "text-green-400"}`}>
+                            {displayStock}
+                        </div>
+                        {isSizeBased && <span className="text-[10px] text-zinc-500">Size Based</span>}
                     </div>
                 );
             }

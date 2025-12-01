@@ -72,7 +72,7 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
             }
             const productData = productDoc.data();
             // Handle size-specific stock
-            if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === 'object') {
+            if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
                 const currentStock = productData.stock[item.size] || 0;
                 if (currentStock < item.quantity) {
                     throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData.title} size ${item.size}`);
@@ -81,22 +81,22 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
             }
             else {
                 // Fallback to global stock (if stock is a number)
-                const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === 'number' ? productData.stock : 0;
+                const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number" ? productData.stock : 0;
                 if (currentStock < item.quantity) {
                     throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData === null || productData === void 0 ? void 0 : productData.title}`);
                 }
                 // Only update if it's a number to avoid overwriting map with number
-                if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === 'number') {
+                if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
                     t.update(productRef, { stock: currentStock - item.quantity });
                 }
             }
             // Calculate delivery timeline based on category
             let itemDeliveryDays = 2; // Default
-            if ((productData === null || productData === void 0 ? void 0 : productData.category) === 'furniture')
+            if ((productData === null || productData === void 0 ? void 0 : productData.category) === "furniture")
                 itemDeliveryDays = 7;
-            else if ((productData === null || productData === void 0 ? void 0 : productData.category) === 'custom')
+            else if ((productData === null || productData === void 0 ? void 0 : productData.category) === "custom")
                 itemDeliveryDays = 5;
-            else if ((productData === null || productData === void 0 ? void 0 : productData.category) === 'shaadi_closet')
+            else if ((productData === null || productData === void 0 ? void 0 : productData.category) === "shaadi_closet")
                 itemDeliveryDays = 4; // Special category from seed
             if (itemDeliveryDays > maxDeliveryDays)
                 maxDeliveryDays = itemDeliveryDays;
@@ -115,9 +115,7 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
             totalAmount: finalAmount,
             surgeMultiplier,
             deliveryOtp,
-            // Use server timestamp for now, or convert date. 
-            // Actually, FieldValue.serverTimestamp() is for "now". 
-            // I should use admin.firestore.Timestamp.fromDate(expectedDeliveryDate) but I don't have admin imported as such in this scope easily without checking imports.
+            // Use server timestamp for now, or convert date.
             // I'll use new Date() which Firestore SDK converts.
             estimatedDeliveryAt: expectedDeliveryDate,
             createdAt: firestore_1.FieldValue.serverTimestamp(),
@@ -136,7 +134,7 @@ exports.completeOrder = functions.https.onCall(async (data, context) => {
         if (!context.auth) {
             throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
         }
-        const { orderId, otp, deliveredItemIds } = data;
+        const { orderId, _otp, deliveredItemIds } = data;
         if (!orderId) {
             throw new functions.https.HttpsError("invalid-argument", "Missing orderId");
         }
@@ -243,7 +241,7 @@ exports.razorpayCreateOrder = functions.https.onCall(async (data, context) => {
     }
 });
 // 3. razorpayVerifySignature
-exports.razorpayVerifySignature = functions.https.onCall(async (data, context) => {
+exports.razorpayVerifySignature = functions.https.onCall(async (data, _context) => {
     var _a;
     const { orderId, paymentId, signature } = data;
     const keySecret = ((_a = functions.config().razorpay) === null || _a === void 0 ? void 0 : _a.key_secret) || "secret_123";
@@ -275,7 +273,7 @@ exports.autoAssignDriver = functions.firestore
     .onUpdate(async (change, context) => {
     var _a, _b, _c, _d;
     const after = change.after.data();
-    const before = change.before.data();
+    const _before = change.before.data();
     // Trigger when:
     // 1. Order is newly created with COD (paymentStatus: 'pending', status: 'pending')
     // 2. OR paymentStatus changes to 'paid' (for future online payments)
@@ -342,7 +340,7 @@ exports.autoAssignDriver = functions.firestore
 // 5. onDriverLocationUpdate
 exports.onDriverLocationUpdate = functions.firestore
     .document("drivers/{driverId}")
-    .onUpdate(async (change, context) => {
+    .onUpdate(async (change, _context) => {
     const after = change.after.data();
     const before = change.before.data();
     if (!after.location || !after.currentOrderId)
@@ -360,7 +358,7 @@ exports.onDriverLocationUpdate = functions.firestore
     return null;
 });
 // 6. calculateSmartETA (Callable)
-exports.calculateSmartETA = functions.https.onCall(async (data, context) => {
+exports.calculateSmartETA = functions.https.onCall(async (data, _context) => {
     const { origin, destination } = data;
     // Mock ETA calculation
     const dist = (0, utils_1.calculateDistance)(origin.lat, origin.lng, destination.lat, destination.lng);
@@ -368,7 +366,7 @@ exports.calculateSmartETA = functions.https.onCall(async (data, context) => {
     return { etaMinutes: Math.round(time), distanceKm: dist.toFixed(1) };
 });
 // 7. generateSurgePrice (Callable)
-exports.generateSurgePrice = functions.https.onCall(async (data, context) => {
+exports.generateSurgePrice = functions.https.onCall(async (_data, _context) => {
     const hour = new Date().getHours();
     return { multiplier: (0, utils_1.getSurgeMultiplier)(hour) };
 });
@@ -376,7 +374,7 @@ exports.generateSurgePrice = functions.https.onCall(async (data, context) => {
 // Let's make it a trigger on order completion
 exports.updateDriverScore = functions.firestore
     .document("orders/{orderId}")
-    .onUpdate(async (change, context) => {
+    .onUpdate(async (change, _context) => {
     const after = change.after.data();
     const before = change.before.data();
     if (after.status === "delivered" && before.status !== "delivered") {
@@ -397,7 +395,7 @@ exports.updateDriverScore = functions.firestore
     return null;
 });
 // 9. storeSubscriptionHandler (Scheduled - daily)
-exports.storeSubscriptionHandler = functions.pubsub.schedule("every 24 hours").onRun(async (context) => {
+exports.storeSubscriptionHandler = functions.pubsub.schedule("every 24 hours").onRun(async (_context) => {
     const storesSnap = await db.collection("stores").where("subscriptionStatus", "==", "active").get();
     const now = new Date();
     const batch = db.batch();
@@ -429,7 +427,7 @@ exports.productEmbeddingJob = functions.firestore
 // 11. chatServer (Firestore-based)
 exports.chatServer = functions.firestore
     .document("messages/{messageId}")
-    .onCreate(async (snap, context) => {
+    .onCreate(async (snap, _context) => {
     const msg = snap.data();
     if (msg.sender === "user") {
         // Auto-reply stub

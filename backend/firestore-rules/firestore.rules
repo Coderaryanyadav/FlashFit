@@ -36,8 +36,11 @@ service cloud.firestore {
 
     // Helper for Sellers
     function isSeller() {
-      // Assuming seller role exists or we check store ownership
-      return isAuthenticated(); // For MVP, any auth user can be a seller potentially, or we check role
+      // Check if user has a store document or a specific role claim
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/stores/$(request.auth.uid)) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller'
+      );
     }
 
     // Stores: Public read, Owner/Admin write
@@ -49,9 +52,9 @@ service cloud.firestore {
     // Products: Public read, Admin/Seller write
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin() || (isAuthenticated() && request.resource.data.storeId == request.auth.uid);
-      allow update: if isAdmin() || (isAuthenticated() && (resource.data.storeId == request.auth.uid || request.resource.data.storeId == request.auth.uid));
-      allow delete: if isAdmin() || (isAuthenticated() && resource.data.storeId == request.auth.uid);
+      allow write: if isAdmin() || (isSeller() && request.resource.data.storeId == request.auth.uid);
+      allow update: if isAdmin() || (isSeller() && (resource.data.storeId == request.auth.uid || request.resource.data.storeId == request.auth.uid));
+      allow delete: if isAdmin() || (isSeller() && resource.data.storeId == request.auth.uid);
     }
 
     // ... (Orders rules remain mostly same, but ensure Seller can view their orders)
@@ -59,10 +62,13 @@ service cloud.firestore {
     // Driver Locations: 
     // - Drivers write their own
     // - Admins can read all
-    // - Authenticated users can read (Trade-off for MVP, as exact order matching is hard in rules)
+    // - Customers can read ONLY if the driver is assigned to their active order (Requires complex query or claim)
+    // - For MVP, we restrict to Admin and Owner, or specific active order check if possible.
+    // - Let's tighten it: Only Admin and the Driver themselves can read raw location stream.
+    // - The customer app should receive location updates via the Order document (which we update via backend trigger), NOT by reading driverLocations directly.
     match /driverLocations/{driverId} {
       allow write: if isOwner(driverId);
-      allow read: if isAuthenticated(); 
+      allow read: if isOwner(driverId) || isAdmin(); 
     }
 
     // Messages: Users read/write their own threads

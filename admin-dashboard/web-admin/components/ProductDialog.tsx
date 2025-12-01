@@ -37,7 +37,7 @@ export function ProductDialog({ open, onOpenChange, productToEdit }: ProductDial
     const [formData, setFormData] = useState({
         title: "",
         price: "",
-        stock: "",
+        stock: "" as string | Record<string, number>,
         category: "",
         image: "",
         pincodes: [] as string[],
@@ -52,7 +52,7 @@ export function ProductDialog({ open, onOpenChange, productToEdit }: ProductDial
                 price: productToEdit.price.toString(),
                 stock: typeof productToEdit.stock === 'number'
                     ? productToEdit.stock.toString()
-                    : Object.values(productToEdit.stock).reduce((a: number, b: any) => a + b, 0).toString(),
+                    : productToEdit.stock, // Keep as object if it is one
                 category: productToEdit.category,
                 image: productToEdit.image,
                 pincodes: [SERVICEABLE_PINCODE],
@@ -87,10 +87,14 @@ export function ProductDialog({ open, onOpenChange, productToEdit }: ProductDial
         setLoading(true);
 
         try {
+            const stockValue = typeof formData.stock === 'object'
+                ? formData.stock
+                : parseInt(formData.stock as string);
+
             const data = {
                 title: formData.title,
                 price: parseFloat(formData.price),
-                stock: parseInt(formData.stock),
+                stock: stockValue,
                 category: formData.category,
                 image: formData.image,
                 pincodes: formData.pincodes,
@@ -154,18 +158,70 @@ export function ProductDialog({ open, onOpenChange, productToEdit }: ProductDial
                             required
                         />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="stock" className="text-right">
-                            Stock
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">
+                            Stock Type
                         </Label>
-                        <Input
-                            id="stock"
-                            type="number"
-                            value={formData.stock}
-                            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                            className="col-span-3"
-                            required
-                        />
+                        <div className="col-span-3 space-y-4">
+                            <Select
+                                value={typeof formData.stock === 'object' ? 'size-based' : 'simple'}
+                                onValueChange={(val) => {
+                                    if (val === 'simple') {
+                                        // Convert to simple stock (sum of sizes or keep existing number)
+                                        const currentTotal = typeof formData.stock === 'object'
+                                            ? Object.values(formData.stock).reduce((a, b) => a + b, 0).toString()
+                                            : formData.stock;
+                                        setFormData({ ...formData, stock: currentTotal });
+                                    } else {
+                                        // Convert to size-based (default empty map or distribute)
+                                        setFormData({ ...formData, stock: { S: 0, M: 0, L: 0, XL: 0, XXL: 0 } });
+                                    }
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="simple">Simple Stock (Total Count)</SelectItem>
+                                    <SelectItem value="size-based">Size Based (S, M, L...)</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {typeof formData.stock === 'object' ? (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {["S", "M", "L", "XL", "XXL"].map((size) => (
+                                        <div key={size} className="space-y-1">
+                                            <Label className="text-xs text-gray-400">{size}</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={(formData.stock as any)[size] || 0}
+                                                onChange={(e) => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        stock: {
+                                                            ...(prev.stock as any),
+                                                            [size]: val
+                                                        }
+                                                    }));
+                                                }}
+                                                className="h-8"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Input
+                                    id="stock"
+                                    type="number"
+                                    value={formData.stock as string}
+                                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                                    placeholder="Total stock count"
+                                    required
+                                />
+                            )}
+                        </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="category" className="text-right">

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/Header";
 import { LoginModal } from "@/components/LoginModal";
 import { CategoryService, Category } from "@/services/categoryService";
@@ -18,7 +19,6 @@ import { ProductService } from "@/services/productService";
 const SERVICEABLE_PINCODE = "400059";
 
 export default function HomePage() {
-  console.log("HomePage rendering...");
   const [products, setProducts] = useState<any[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -164,10 +164,12 @@ export default function HomePage() {
         <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black z-10" />
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=1600&q=80"
               alt="Hero"
-              className="w-full h-full object-cover object-center scale-105 animate-pulse-slow"
+              fill
+              priority
+              className="object-cover object-center scale-105 animate-pulse-slow"
             />
           </div>
 
@@ -212,13 +214,14 @@ export default function HomePage() {
                   onClick={() => localStorage.setItem("userAffinity", category.slug)}
                 >
                   <div className="absolute inset-0 bg-zinc-900 transition-colors duration-500 group-hover:bg-zinc-800">
-                    <img
+                    <Image
                       src={category.image}
                       alt={category.name}
-                      className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 grayscale group-hover:grayscale-0"
+                      fill
+                      className="object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 grayscale group-hover:grayscale-0"
                       onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80`;
+                        // Note: onError on next/image works differently, usually requires handling state or fallback src
+                        // For now, we'll rely on valid images or handle at data level
                       }}
                     />
                   </div>
