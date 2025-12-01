@@ -8,8 +8,8 @@ if (!admin.apps.length) {
 
         admin.initializeApp({
             credential: admin.credential.cert({
-                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "studio-847805730-4f392",
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "firebase-adminsdk-fbsvc@studio-847805730-4f392.iam.gserviceaccount.com",
                 privateKey: privateKey,
             }),
         });
