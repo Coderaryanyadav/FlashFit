@@ -7,8 +7,9 @@ import { ClientLayout } from "@/components/ClientLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FlashFit Admin",
-  description: "Admin Dashboard for FlashFit",
+  title: "FlashFit Admin | Dashboard",
+  description: "Manage orders, products, drivers, and customers for FlashFit.",
+  robots: "noindex, nofollow", // Prevent indexing of admin panel
 };
 
 export default function RootLayout({

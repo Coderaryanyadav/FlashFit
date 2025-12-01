@@ -132,72 +132,89 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
 });
 // 1.5 completeOrder
 exports.completeOrder = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
-    }
-    const { orderId, otp, deliveredItemIds } = data;
-    const orderRef = db.collection("orders").doc(orderId);
-    await db.runTransaction(async (t) => {
-        var _a;
-        const orderDoc = await t.get(orderRef);
-        if (!orderDoc.exists) {
-            throw new functions.https.HttpsError("not-found", "Order not found");
+    try {
+        if (!context.auth) {
+            throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
         }
-        const orderData = orderDoc.data();
-        if ((orderData === null || orderData === void 0 ? void 0 : orderData.deliveryOtp) !== otp) {
-            throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
+        const { orderId, otp, deliveredItemIds } = data;
+        if (!orderId) {
+            throw new functions.https.HttpsError("invalid-argument", "Missing orderId");
         }
-        const items = (orderData === null || orderData === void 0 ? void 0 : orderData.items) || [];
-        const updatedItems = items.map((item) => {
-            const itemId = item.id || item.productId;
-            const isDelivered = deliveredItemIds.includes(itemId);
-            return Object.assign(Object.assign({}, item), { status: isDelivered ? "delivered" : "returned" });
-        });
-        const returnedItems = items.filter((item) => {
-            const itemId = item.id || item.productId;
-            return !deliveredItemIds.includes(itemId);
-        });
-        // Handle returns (increment stock)
-        for (const item of returnedItems) {
-            const productId = item.productId || item.id;
-            if (productId) {
-                const productRef = db.collection("products").doc(productId);
-                const productDoc = await t.get(productRef);
-                if (productDoc.exists) {
-                    const productData = productDoc.data();
-                    // Handle size-specific stock return
-                    if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
-                        const currentStock = productData.stock[item.size] || 0;
-                        t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
-                    }
-                    else {
-                        const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number" ? productData.stock : 0;
-                        if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
-                            t.update(productRef, { stock: currentStock + (item.quantity || 1) });
+        if (!Array.isArray(deliveredItemIds)) {
+            throw new functions.https.HttpsError("invalid-argument", "deliveredItemIds must be an array");
+        }
+        const orderRef = db.collection("orders").doc(orderId);
+        await db.runTransaction(async (t) => {
+            var _a;
+            const orderDoc = await t.get(orderRef);
+            if (!orderDoc.exists) {
+                throw new functions.https.HttpsError("not-found", "Order not found");
+            }
+            const orderData = orderDoc.data();
+            // OTP check removed as per user request
+            // if (orderData?.deliveryOtp !== otp) {
+            //   throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
+            // }
+            const items = (orderData === null || orderData === void 0 ? void 0 : orderData.items) || [];
+            const updatedItems = items.map((item) => {
+                const itemId = item.id || item.productId;
+                const isDelivered = deliveredItemIds.includes(itemId);
+                return Object.assign(Object.assign({}, item), { status: isDelivered ? "delivered" : "returned" });
+            });
+            const returnedItems = items.filter((item) => {
+                const itemId = item.id || item.productId;
+                return !deliveredItemIds.includes(itemId);
+            });
+            // Handle returns (increment stock)
+            for (const item of returnedItems) {
+                const productId = item.productId || item.id;
+                if (productId) {
+                    const productRef = db.collection("products").doc(productId);
+                    const productDoc = await t.get(productRef);
+                    if (productDoc.exists) {
+                        const productData = productDoc.data();
+                        // Handle size-specific stock return
+                        if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
+                            const currentStock = productData.stock[item.size] || 0;
+                            t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
+                        }
+                        else {
+                            const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number" ? productData.stock : 0;
+                            if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
+                                t.update(productRef, { stock: currentStock + (item.quantity || 1) });
+                            }
                         }
                     }
                 }
             }
-        }
-        const allReturned = deliveredItemIds.length === 0;
-        const newStatus = allReturned ? "returning" : "delivered";
-        const currentPaymentStatus = (orderData === null || orderData === void 0 ? void 0 : orderData.paymentStatus) || "pending";
-        const newPaymentStatus = allReturned ? "cancelled" : currentPaymentStatus;
-        t.update(orderRef, {
-            status: newStatus,
-            items: updatedItems,
-            deliveredAt: firestore_1.FieldValue.serverTimestamp(),
-            paymentStatus: newPaymentStatus,
-            tracking: {
+            const allReturned = deliveredItemIds.length === 0;
+            const newStatus = allReturned ? "returning" : "delivered";
+            const currentPaymentStatus = (orderData === null || orderData === void 0 ? void 0 : orderData.paymentStatus) || "pending";
+            const newPaymentStatus = allReturned ? "cancelled" : currentPaymentStatus;
+            t.update(orderRef, {
                 status: newStatus,
-                logs: [
-                    ...(((_a = orderData === null || orderData === void 0 ? void 0 : orderData.tracking) === null || _a === void 0 ? void 0 : _a.logs) || []),
-                    { status: newStatus, timestamp: new Date() },
-                ],
-            },
+                items: updatedItems,
+                deliveredAt: firestore_1.FieldValue.serverTimestamp(),
+                paymentStatus: newPaymentStatus,
+                tracking: {
+                    status: newStatus,
+                    logs: [
+                        ...(((_a = orderData === null || orderData === void 0 ? void 0 : orderData.tracking) === null || _a === void 0 ? void 0 : _a.logs) || []),
+                        { status: newStatus, timestamp: new Date() },
+                    ],
+                },
+            });
         });
-    });
-    return { success: true };
+        return { success: true };
+    }
+    catch (error) {
+        console.error("Error in completeOrder:", error);
+        // Re-throw HttpsError as is, wrap others
+        if (error instanceof functions.https.HttpsError) {
+            throw error;
+        }
+        throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
+    }
 });
 // 2. razorpayCreateOrder
 exports.razorpayCreateOrder = functions.https.onCall(async (data, context) => {

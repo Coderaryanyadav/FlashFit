@@ -19,7 +19,7 @@ interface ProductCardProps {
   weight?: string;
   discount?: number;
   category?: string;
-  stock?: number;
+  stock?: number | Record<string, number>;
 }
 
 export function ProductCard({ id, title, price, image, weight, discount, category, stock }: ProductCardProps) {
@@ -43,7 +43,7 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
       price,
       image,
       category: category || "Uncategorized",
-      stock: stock || 0
+      stock: typeof stock === 'number' ? stock : (stock ? Object.values(stock).reduce((a, b) => a + b, 0) : 0)
     });
 
     // Show confetti
@@ -92,11 +92,14 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
                 -{discount}% OFF
               </div>
             )}
-            {stock && stock < 5 && (
-              <div className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
-                LOW STOCK
-              </div>
-            )}
+            {(() => {
+              const totalStock = typeof stock === 'number' ? stock : (stock ? Object.values(stock).reduce((a, b) => a + b, 0) : 0);
+              return totalStock > 0 && totalStock < 5 && (
+                <div className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                  LOW STOCK
+                </div>
+              );
+            })()}
           </div>
 
           {/* Wishlist Heart */}

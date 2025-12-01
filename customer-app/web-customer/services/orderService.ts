@@ -42,14 +42,21 @@ export interface Order {
 
 export const OrderService = {
     // Create a new order
-    createOrder: async (orderData: Omit<Order, 'id' | 'createdAt'>) => {
+    // Create a new order via Cloud Function
+    createOrder: async (orderData: any) => {
         try {
-            const docRef = await addDoc(collection(db, "orders"), {
-                ...orderData,
-                createdAt: serverTimestamp(),
-                status: 'pending'
+            const { httpsCallable } = await import("firebase/functions");
+            const { functions } = await import("@/utils/firebase");
+
+            const createOrderFn = httpsCallable(functions, 'createOrder');
+            const result: any = await createOrderFn({
+                items: orderData.items,
+                address: orderData.shippingAddress,
+                storeId: orderData.storeId || "default_store", // Fallback if not provided
+                totalAmount: orderData.totalAmount
             });
-            return docRef.id;
+
+            return result.data.orderId;
         } catch (error) {
             console.error("Error creating order:", error);
             throw error;

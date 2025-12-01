@@ -385,7 +385,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
             </motion.div>
 
             {/* Delivery OTP - Show when driver is assigned or picked up */}
-            {['assigned', 'picked_up'].includes(order.status) && order.deliveryOtp && (
+            {['assigned', 'picked_up', 'placed', 'confirmed'].includes(order.status) && order.deliveryOtp && (
               <motion.div
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}

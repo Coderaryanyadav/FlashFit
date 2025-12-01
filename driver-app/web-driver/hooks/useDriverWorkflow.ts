@@ -34,9 +34,14 @@ export function useDriverWorkflow(user: any) {
     const updateStatus = async (newStatus: string) => {
         if (!activeOrder || !user) return;
         try {
-            await updateDoc(doc(db, "orders", activeOrder.id), {
-                status: newStatus,
-                lastUpdated: serverTimestamp()
+            const { httpsCallable, getFunctions } = await import("firebase/functions");
+            const { app } = await import("@/utils/firebase");
+            const functions = getFunctions(app);
+
+            const updateOrderStatusFn = httpsCallable(functions, 'updateOrderStatus');
+            await updateOrderStatusFn({
+                orderId: activeOrder.id,
+                status: newStatus
             });
         } catch (error) {
             console.error("Error updating status:", error);

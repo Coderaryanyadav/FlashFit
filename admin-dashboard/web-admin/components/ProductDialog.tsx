@@ -50,7 +50,9 @@ export function ProductDialog({ open, onOpenChange, productToEdit }: ProductDial
             setFormData({
                 title: productToEdit.title,
                 price: productToEdit.price.toString(),
-                stock: productToEdit.stock.toString(),
+                stock: typeof productToEdit.stock === 'number'
+                    ? productToEdit.stock.toString()
+                    : Object.values(productToEdit.stock).reduce((a: number, b: any) => a + b, 0).toString(),
                 category: productToEdit.category,
                 image: productToEdit.image,
                 pincodes: [SERVICEABLE_PINCODE],

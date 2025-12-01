@@ -39,8 +39,15 @@ export default function OrdersPage() {
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         try {
-            await updateDoc(doc(db, "orders", id), {
-                status: newStatus
+            const { httpsCallable, getFunctions } = await import("firebase/functions");
+            const { app } = await import("@/utils/firebase");
+            const functions = getFunctions(app);
+
+            const updateOrderStatusFn = httpsCallable(functions, 'updateOrderStatus');
+            await updateOrderStatusFn({
+                orderId: id,
+                status: newStatus,
+                description: `Status updated to ${newStatus} by admin`
             });
         } catch (error) {
             console.error("Error updating status:", error);
@@ -54,6 +61,11 @@ export default function OrdersPage() {
             accessorKey: "id",
             header: "Order ID",
             cell: ({ row }) => <span className="font-mono text-xs">{row.original.id.slice(0, 8)}...</span>
+        },
+        {
+            accessorKey: "storeName",
+            header: "Store",
+            cell: ({ row }) => <div className="text-xs font-medium">{(row.original as any).storeName || "FlashFit Store"}</div>
         },
         {
             accessorKey: "totalAmount",

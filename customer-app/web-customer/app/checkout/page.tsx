@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, CreditCard, CheckCircle2, Truck, ShieldCheck, Loader2, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -162,11 +163,22 @@ export default function CheckoutPage() {
         }
       }
 
+      // Use the storeId from the first item, or a default
+      // In a multi-vendor app, we might need to split orders, but for now we assume one store or handle it in backend
+      const storeId = (items[0] as any).storeId || "default_store";
+
       const orderId = await OrderService.createOrder({
         userId,
-        items,
+        items: items.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          size: item.size,
+          price: item.price,
+          title: item.title,
+          image: item.image
+        })),
         totalAmount: total(),
-        status: 'pending',
+        storeId,
         shippingAddress: {
           name: formData.fullName,
           phone: formData.phone,
@@ -178,29 +190,9 @@ export default function CheckoutPage() {
       });
       console.log("Order created with ID: ", orderId);
 
-      // Decrease product stock for each item
-      for (const item of items) {
-        try {
-          const productRef = doc(db, "products", item.id);
-          const productSnap = await getDoc(productRef);
-
-          if (productSnap.exists()) {
-            const currentStock = productSnap.data().stock || 0;
-            const newStock = Math.max(0, currentStock - item.quantity);
-
-            await updateDoc(productRef, {
-              stock: newStock
-            });
-          }
-        } catch (stockError) {
-          console.error(`Failed to update stock for product ${item.id}:`, stockError);
-        }
-      }
-
       clearCart();
       setPlacedOrderId(orderId);
       setOrderSuccess(true);
-      // Removed alert and router.push here, handled by modal
     } catch (error) {
       console.error("Error placing order: ", error);
       alert("Failed to place order. Please try again.");
@@ -209,6 +201,17 @@ export default function CheckoutPage() {
     }
   };
 
+  // Enforce Login
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        toast.error("Please login to place an order");
+        router.push("/login?redirect=/checkout");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
   // ... (existing render logic for empty cart)
 
   return (
@@ -216,15 +219,15 @@ export default function CheckoutPage() {
       <Header />
 
       {step === 1 ? (
-        // ... (existing Step 1 JSX)
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
-          {/* Left: Map (70%) */}
-          <div className="w-full lg:w-[70%] h-[50vh] lg:h-full relative">
+        // Step 1: Address & Details
+        <div className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-80px)]">
+          {/* Left: Map (Mobile: 40vh, Desktop: 70%) */}
+          <div className="w-full lg:w-[70%] h-[40vh] lg:h-full relative order-1 lg:order-1">
             <AddressMap onAddressSelect={handleAddressSelect} />
           </div>
 
-          {/* Right: Form (30%) */}
-          <div className="w-full lg:w-[30%] h-full overflow-y-auto bg-neutral-900 border-l border-white/10 p-6">
+          {/* Right: Form (Mobile: Auto height, Desktop: 30%) */}
+          <div className="w-full lg:w-[30%] h-auto lg:h-full overflow-y-auto bg-neutral-900 border-l border-white/10 p-6 order-2 lg:order-2 pb-24 lg:pb-6">
             <div className="flex items-center gap-4 mb-6">
               <Link href="/cart" className="p-2 hover:bg-white/5 rounded-full transition-colors">
                 <ArrowLeft className="w-6 h-6 text-white" />

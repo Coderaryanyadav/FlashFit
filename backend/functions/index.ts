@@ -119,8 +119,8 @@ export const completeOrder = functions.https.onCall(async (data, context) => {
 
     const { orderId, otp, deliveredItemIds } = data;
 
-    if (!orderId || !otp) {
-      throw new functions.https.HttpsError("invalid-argument", "Missing orderId or otp");
+    if (!orderId) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing orderId");
     }
 
     if (!Array.isArray(deliveredItemIds)) {
@@ -137,9 +137,10 @@ export const completeOrder = functions.https.onCall(async (data, context) => {
 
       const orderData = orderDoc.data();
 
-      if (orderData?.deliveryOtp !== otp) {
-        throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
-      }
+      // OTP check removed as per user request
+      // if (orderData?.deliveryOtp !== otp) {
+      //   throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
+      // }
 
       const items = orderData?.items || [];
       const updatedItems = items.map((item: any) => {

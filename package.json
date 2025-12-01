@@ -1,0 +1,23 @@
+{
+    "name": "flashfit-monorepo",
+    "version": "0.0.0",
+    "private": true,
+    "workspaces": [
+        "admin-dashboard/web-admin",
+        "customer-app/web-customer",
+        "driver-app/web-driver",
+        "seller-app",
+        "backend/functions",
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "clean": "turbo run clean"
+    },
+    "devDependencies": {
+        "turbo": "latest"
+    },
+    "packageManager": "npm@10.0.0"
+}

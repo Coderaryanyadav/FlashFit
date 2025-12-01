@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowLeft, ShoppingCart, Star, Truck, ShieldCheck, RefreshCw, Heart, Sparkles, MessageSquare } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Star, Truck, ShieldCheck, RefreshCw, Heart, Sparkles, MessageSquare, Store } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
@@ -30,6 +30,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [imgSrc, setImgSrc] = useState("");
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [sellerName, setSellerName] = useState<string>("");
 
 
   useEffect(() => {
@@ -38,6 +39,10 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         const fetchedProduct = await ProductService.getProductById(params.id);
         if (fetchedProduct) {
           setProduct(fetchedProduct);
+          if (fetchedProduct.storeId) {
+            const seller = await ProductService.getSellerProfile(fetchedProduct.storeId);
+            if (seller) setSellerName(seller.storeName || seller.displayName || "Verified Seller");
+          }
         } else {
           console.error("Product not found");
         }
@@ -84,7 +89,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
       image: product.image,
       description: product.description || "",
       category: product.category || "Uncategorized",
-      stock: product.stock || 0
+      stock: typeof product.stock === 'number' ? product.stock : (product.stock ? Object.values(product.stock).reduce((a, b) => a + b, 0) : 0)
     }, size, quantity);
     toast.success("Added to cart", {
       description: `${quantity} x ${product.title} (${size}) added to your cart.`,
@@ -180,6 +185,14 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               </div>
 
               <p className="text-sm text-muted-foreground">Inclusive of all taxes</p>
+
+              {/* Seller Info */}
+              {sellerName && (
+                <div className="mt-4 flex items-center gap-2 text-sm text-gray-400">
+                  <Store className="w-4 h-4" />
+                  <span>Sold by <span className="text-white font-bold">{sellerName}</span></span>
+                </div>
+              )}
             </div>
 
             <div className="prose prose-invert prose-lg text-muted-foreground mb-10">
