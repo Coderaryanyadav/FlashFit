@@ -10,8 +10,8 @@ import { db, auth } from "@/utils/firebase"; // We need admin SDK for transactio
 // Let's try to use the client SDK for now but we might hit permission issues if rules are strict.
 // The best way for Vercel is to use firebase-admin.
 
-import { adminDb } from "@/utils/firebaseAdmin";
-import { FieldValue } from "firebase-admin/firestore";
+import { adminDb } from "../../utils/firebaseAdmin";
+import { FieldValue, Transaction } from "firebase-admin/firestore";
 
 export async function POST(request: Request) {
     try {
@@ -31,12 +31,48 @@ export async function POST(request: Request) {
         const deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
         let maxDeliveryDays = 2;
 
+        // Fetch store details (moved outside transaction to simplify, as it's read-only)
+        let storeName = "FlashFit Store";
+        let pickupAddress = "Goregaon, Mumbai";
+
+        if (storeId) {
+            const storeDoc = await adminDb.collection("users").doc(storeId).get();
+            if (storeDoc.exists) {
+                const storeData = storeDoc.data();
+                storeName = storeData?.storeName || storeData?.displayName || storeName;
+                pickupAddress = storeData?.storeAddress || pickupAddress;
+            }
+        }
+
+        // FETCH DRIVERS (Outside Transaction for initial query, then re-check inside)
+        const driversSnap = await adminDb.collection("drivers")
+            .where("isOnline", "==", true)
+            .where("currentOrderId", "==", null)
+            .get();
+
+        let nearestDriver: any = null;
+        let minDistance = Infinity;
+        // Default store location (Goregaon)
+        const storeLat = 19.163328;
+        const storeLng = 72.841200;
+
+        driversSnap.docs.forEach((doc: any) => {
+            const driver = doc.data();
+            if (driver.location) {
+                const dist = calculateDistance(storeLat, storeLng, driver.location.lat, driver.location.lng);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearestDriver = doc;
+                }
+            }
+        });
+
         // Transaction
-        await adminDb.runTransaction(async (t) => {
+        await adminDb.runTransaction(async (t: Transaction) => {
             // 1. Check and decrement stock
             for (const item of items) {
                 const productRef = adminDb.collection("products").doc(item.productId);
-                const productDoc = await t.get(productRef);
+                const productDoc = await t.get(productRef) as any; // Cast to any to avoid TS issues with admin SDK types
 
                 if (!productDoc.exists) {
                     throw new Error(`Product ${item.productId} not found`);
@@ -78,21 +114,8 @@ export async function POST(request: Request) {
             const expectedDeliveryDate = new Date();
             expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
 
-            // Fetch store details
-            let storeName = "FlashFit Store";
-            let pickupAddress = "Goregaon, Mumbai";
-
-            if (storeId) {
-                const storeDoc = await t.get(adminDb.collection("users").doc(storeId));
-                if (storeDoc.exists) {
-                    const storeData = storeDoc.data();
-                    storeName = storeData?.storeName || storeData?.displayName || storeName;
-                    pickupAddress = storeData?.storeAddress || pickupAddress;
-                }
-            }
-
             // 2. Create Order
-            const orderData = {
+            const orderData: any = {
                 id: orderRef.id,
                 userId,
                 storeId,
@@ -110,17 +133,36 @@ export async function POST(request: Request) {
                 createdAt: FieldValue.serverTimestamp(),
                 tracking: {
                     status: "placed",
+                    logs: []
                 },
             };
 
+            // 3. Assign Driver (if found)
+            if (nearestDriver) {
+                // Check if driver is still available (optimistic)
+                // In a real robust system, we'd read the driver doc inside transaction.
+                const driverRef = adminDb.collection("drivers").doc(nearestDriver.id);
+                const driverDoc = await t.get(driverRef) as any;
+
+                if (driverDoc.exists && driverDoc.data()?.currentOrderId === null) {
+                    orderData.driverId = nearestDriver.id;
+                    orderData.status = "assigned";
+                    orderData.assignedAt = FieldValue.serverTimestamp();
+                    orderData.tracking.status = "assigned";
+                    orderData.tracking.logs.push({ status: "assigned", timestamp: new Date(), driverId: nearestDriver.id });
+
+                    t.update(driverRef, { currentOrderId: orderRef.id });
+                }
+            }
+
             t.set(orderRef, orderData);
 
-            // 3. Add initial log
+            // 4. Add initial log
             const logRef = orderRef.collection("logs").doc();
             t.set(logRef, {
-                status: "placed",
+                status: orderData.status,
                 timestamp: FieldValue.serverTimestamp(),
-                description: "Order placed successfully",
+                description: orderData.status === 'assigned' ? "Order placed and driver assigned" : "Order placed successfully",
             });
         });
 
@@ -131,3 +173,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
 }
+
+// Helper Functions
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d;
+}
+
+function deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
+}
+
