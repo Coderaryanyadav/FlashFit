@@ -15,10 +15,19 @@ import { FieldValue, Transaction } from "firebase-admin/firestore";
 
 export async function POST(request: Request) {
     try {
+        // Check if Firebase Admin is initialized
+        if (!adminDb) {
+            console.error("Firebase Admin DB is not initialized");
+            return NextResponse.json({
+                error: "Server configuration error: Database not initialized. Please check Firebase credentials."
+            }, { status: 500 });
+        }
+
         const body = await request.json();
         const { items, address, storeId, totalAmount, userId } = body;
 
         if (!items || !address || !storeId || !totalAmount || !userId) {
+            console.error("Missing required fields:", { items: !!items, address: !!address, storeId: !!storeId, totalAmount: !!totalAmount, userId: !!userId });
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
@@ -169,8 +178,16 @@ export async function POST(request: Request) {
         return NextResponse.json({ orderId: orderRef.id, success: true });
 
     } catch (error: any) {
-        console.error("Error creating order:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        console.error("❌ Error creating order:");
+        console.error("Error name:", error?.name);
+        console.error("Error message:", error?.message);
+        console.error("Error stack:", error?.stack);
+        console.error("Full error:", JSON.stringify(error, null, 2));
+
+        return NextResponse.json({
+            error: error.message || "Internal Server Error",
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: 500 });
     }
 }
 
