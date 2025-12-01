@@ -45,18 +45,28 @@ export const OrderService = {
     // Create a new order via Cloud Function
     createOrder: async (orderData: any) => {
         try {
-            const { httpsCallable } = await import("firebase/functions");
-            const { functions } = await import("@/utils/firebase");
-
-            const createOrderFn = httpsCallable(functions, 'createOrder');
-            const result: any = await createOrderFn({
-                items: orderData.items,
-                address: orderData.shippingAddress,
-                storeId: orderData.storeId || "default_store", // Fallback if not provided
-                totalAmount: orderData.totalAmount
+            // Call Next.js API Route instead of Cloud Function
+            const response = await fetch('/api/createOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    items: orderData.items,
+                    address: orderData.shippingAddress,
+                    storeId: orderData.storeId || "default_store",
+                    totalAmount: orderData.totalAmount,
+                    userId: orderData.userId
+                }),
             });
 
-            return result.data.orderId;
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to create order");
+            }
+
+            return result.orderId;
         } catch (error) {
             console.error("Error creating order:", error);
             throw error;
