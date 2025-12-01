@@ -10,11 +10,14 @@ import { db, auth } from "@/utils/firebase"; // We need admin SDK for transactio
 // Let's try to use the client SDK for now but we might hit permission issues if rules are strict.
 // The best way for Vercel is to use firebase-admin.
 
-import { adminDb } from "@/utils/firebaseAdmin";
+import { getAdminDb } from "@/utils/firebaseAdmin";
 import { FieldValue, Transaction } from "firebase-admin/firestore";
 
 export async function POST(request: Request) {
     try {
+        // Initialize Firebase Admin lazily
+        const adminDb = getAdminDb();
+
         // Check if Firebase Admin is initialized
         if (!adminDb) {
             console.error("Firebase Admin DB is not initialized");

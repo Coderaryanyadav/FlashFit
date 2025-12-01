@@ -1,9 +1,11 @@
 import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin with service account
-if (!admin.apps.length) {
+function initializeFirebaseAdmin() {
+    if (admin.apps.length > 0) {
+        return admin.app();
+    }
+
     try {
-        // For Vercel deployment, we'll use individual env vars
         const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
         if (!privateKey) {
@@ -22,16 +24,26 @@ if (!admin.apps.length) {
             privateKey: formattedKey,
         });
 
-        admin.initializeApp({
+        const app = admin.initializeApp({
             credential: credential,
         });
 
         console.log("✅ Firebase Admin initialized successfully");
+        return app;
     } catch (error: any) {
         console.error("❌ Firebase Admin initialization failed:", error.message);
         console.error("Stack:", error.stack);
+        throw error;
     }
 }
 
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
+// Lazy getters that initialize on first access
+export function getAdminDb(): admin.firestore.Firestore {
+    const app = initializeFirebaseAdmin();
+    return app.firestore();
+}
+
+export function getAdminAuth(): admin.auth.Auth {
+    const app = initializeFirebaseAdmin();
+    return app.auth();
+}
