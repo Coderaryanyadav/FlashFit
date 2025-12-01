@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.completeOrder = exports.createOrder = void 0;
+exports.submitRating = exports.updateOrderStatus = exports.completeOrder = exports.createOrder = void 0;
 const functions = __importStar(require("firebase-functions"));
 const service_1 = require("./service");
 const service = new service_1.OrderService();
@@ -35,7 +35,16 @@ exports.createOrder = functions.https.onCall(async (data, context) => {
     if (!items || !address || !storeId || !totalAmount) {
         throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
     }
-    return await service.createOrder(context.auth.uid, data);
+    try {
+        return await service.createOrder(context.auth.uid, data);
+    }
+    catch (error) {
+        console.error("Error in createOrder:", error);
+        if (error instanceof functions.https.HttpsError) {
+            throw error;
+        }
+        throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
+    }
 });
 exports.completeOrder = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
@@ -72,6 +81,28 @@ exports.updateOrderStatus = functions.https.onCall(async (data, context) => {
     }
     catch (error) {
         console.error("Error in updateOrderStatus:", error);
+        if (error instanceof functions.https.HttpsError) {
+            throw error;
+        }
+        throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
+    }
+});
+exports.submitRating = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
+    }
+    const { orderId, rating, review } = data;
+    if (!orderId || !rating) {
+        throw new functions.https.HttpsError("invalid-argument", "Missing orderId or rating");
+    }
+    if (rating < 1 || rating > 5) {
+        throw new functions.https.HttpsError("invalid-argument", "Rating must be between 1 and 5");
+    }
+    try {
+        return await service.submitRating(context.auth.uid, orderId, rating, review);
+    }
+    catch (error) {
+        console.error("Error in submitRating:", error);
         if (error instanceof functions.https.HttpsError) {
             throw error;
         }

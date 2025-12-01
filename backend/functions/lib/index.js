@@ -29,7 +29,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.chatServer = exports.productEmbeddingJob = exports.storeSubscriptionHandler = exports.updateDriverScore = exports.generateSurgePrice = exports.calculateSmartETA = exports.onDriverLocationUpdate = exports.autoAssignDriver = exports.razorpayVerifySignature = exports.razorpayCreateOrder = exports.completeOrder = exports.createOrder = void 0;
+exports.chatServer = exports.productEmbeddingJob = exports.storeSubscriptionHandler = exports.updateDriverScore = exports.generateSurgePrice = exports.calculateSmartETA = exports.onDriverLocationUpdate = exports.autoAssignDriver = exports.razorpayVerifySignature = exports.razorpayCreateOrder = exports.submitRating = exports.updateOrderStatus = exports.completeOrder = exports.createOrder = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const firestore_1 = require("firebase-admin/firestore");
@@ -40,180 +40,12 @@ __exportStar(require("./ai"), exports);
 __exportStar(require("./utils"), exports);
 admin.initializeApp();
 const db = admin.firestore();
-// 1. createOrder (Callable)
-exports.createOrder = functions.https.onCall(async (data, context) => {
-    // CORS is handled automatically by onCall for callable functions
-    // But for raw HTTP requests we would need it.
-    // Since we are using onCall, the SDK handles CORS.
-    // However, let's ensure we are strict about auth.
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
-    }
-    const { items, address, storeId, totalAmount } = data;
-    const userId = context.auth.uid;
-    if (!items || !address || !storeId || !totalAmount) {
-        throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
-    }
-    // Calculate surge
-    const hour = new Date().getHours();
-    const surgeMultiplier = (0, utils_1.getSurgeMultiplier)(hour);
-    const finalAmount = totalAmount * surgeMultiplier;
-    const orderRef = db.collection("orders").doc();
-    const deliveryOtp = (0, utils_1.generateOtp)();
-    let maxDeliveryDays = 2;
-    // Transaction to handle inventory and order creation
-    await db.runTransaction(async (t) => {
-        // 1. Check and decrement stock
-        for (const item of items) {
-            const productRef = db.collection("products").doc(item.productId);
-            const productDoc = await t.get(productRef);
-            if (!productDoc.exists) {
-                throw new functions.https.HttpsError("not-found", `Product ${item.productId} not found`);
-            }
-            const productData = productDoc.data();
-            // Handle size-specific stock
-            if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
-                const currentStock = productData.stock[item.size] || 0;
-                if (currentStock < item.quantity) {
-                    throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData.title} size ${item.size}`);
-                }
-                t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
-            }
-            else {
-                // Fallback to global stock (if stock is a number)
-                const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number" ? productData.stock : 0;
-                if (currentStock < item.quantity) {
-                    throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData === null || productData === void 0 ? void 0 : productData.title}`);
-                }
-                // Only update if it's a number to avoid overwriting map with number
-                if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
-                    t.update(productRef, { stock: currentStock - item.quantity });
-                }
-            }
-            // Calculate delivery timeline based on category
-            let itemDeliveryDays = 2; // Default
-            if ((productData === null || productData === void 0 ? void 0 : productData.category) === "furniture")
-                itemDeliveryDays = 7;
-            else if ((productData === null || productData === void 0 ? void 0 : productData.category) === "custom")
-                itemDeliveryDays = 5;
-            else if ((productData === null || productData === void 0 ? void 0 : productData.category) === "shaadi_closet")
-                itemDeliveryDays = 4; // Special category from seed
-            if (itemDeliveryDays > maxDeliveryDays)
-                maxDeliveryDays = itemDeliveryDays;
-        }
-        const expectedDeliveryDate = new Date();
-        expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
-        // 2. Create Order
-        const orderData = {
-            id: orderRef.id,
-            userId,
-            storeId,
-            items,
-            address,
-            status: "pending",
-            paymentStatus: "pending",
-            totalAmount: finalAmount,
-            surgeMultiplier,
-            deliveryOtp,
-            // Use server timestamp for now, or convert date.
-            // I'll use new Date() which Firestore SDK converts.
-            estimatedDeliveryAt: expectedDeliveryDate,
-            createdAt: firestore_1.FieldValue.serverTimestamp(),
-            tracking: {
-                status: "placed",
-                logs: [{ status: "placed", timestamp: new Date() }],
-            },
-        };
-        t.set(orderRef, orderData);
-    });
-    return { orderId: orderRef.id, finalAmount };
-});
-// 1.5 completeOrder
-exports.completeOrder = functions.https.onCall(async (data, context) => {
-    try {
-        if (!context.auth) {
-            throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
-        }
-        const { orderId, _otp, deliveredItemIds } = data;
-        if (!orderId) {
-            throw new functions.https.HttpsError("invalid-argument", "Missing orderId");
-        }
-        if (!Array.isArray(deliveredItemIds)) {
-            throw new functions.https.HttpsError("invalid-argument", "deliveredItemIds must be an array");
-        }
-        const orderRef = db.collection("orders").doc(orderId);
-        await db.runTransaction(async (t) => {
-            var _a;
-            const orderDoc = await t.get(orderRef);
-            if (!orderDoc.exists) {
-                throw new functions.https.HttpsError("not-found", "Order not found");
-            }
-            const orderData = orderDoc.data();
-            // OTP check removed as per user request
-            // if (orderData?.deliveryOtp !== otp) {
-            //   throw new functions.https.HttpsError("permission-denied", "Invalid OTP");
-            // }
-            const items = (orderData === null || orderData === void 0 ? void 0 : orderData.items) || [];
-            const updatedItems = items.map((item) => {
-                const itemId = item.id || item.productId;
-                const isDelivered = deliveredItemIds.includes(itemId);
-                return Object.assign(Object.assign({}, item), { status: isDelivered ? "delivered" : "returned" });
-            });
-            const returnedItems = items.filter((item) => {
-                const itemId = item.id || item.productId;
-                return !deliveredItemIds.includes(itemId);
-            });
-            // Handle returns (increment stock)
-            for (const item of returnedItems) {
-                const productId = item.productId || item.id;
-                if (productId) {
-                    const productRef = db.collection("products").doc(productId);
-                    const productDoc = await t.get(productRef);
-                    if (productDoc.exists) {
-                        const productData = productDoc.data();
-                        // Handle size-specific stock return
-                        if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
-                            const currentStock = productData.stock[item.size] || 0;
-                            t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
-                        }
-                        else {
-                            const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number" ? productData.stock : 0;
-                            if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
-                                t.update(productRef, { stock: currentStock + (item.quantity || 1) });
-                            }
-                        }
-                    }
-                }
-            }
-            const allReturned = deliveredItemIds.length === 0;
-            const newStatus = allReturned ? "returning" : "delivered";
-            const currentPaymentStatus = (orderData === null || orderData === void 0 ? void 0 : orderData.paymentStatus) || "pending";
-            const newPaymentStatus = allReturned ? "cancelled" : currentPaymentStatus;
-            t.update(orderRef, {
-                status: newStatus,
-                items: updatedItems,
-                deliveredAt: firestore_1.FieldValue.serverTimestamp(),
-                paymentStatus: newPaymentStatus,
-                tracking: {
-                    status: newStatus,
-                    logs: [
-                        ...(((_a = orderData === null || orderData === void 0 ? void 0 : orderData.tracking) === null || _a === void 0 ? void 0 : _a.logs) || []),
-                        { status: newStatus, timestamp: new Date() },
-                    ],
-                },
-            });
-        });
-        return { success: true };
-    }
-    catch (error) {
-        console.error("Error in completeOrder:", error);
-        // Re-throw HttpsError as is, wrap others
-        if (error instanceof functions.https.HttpsError) {
-            throw error;
-        }
-        throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
-    }
-});
+const ordersController = __importStar(require("./src/v1/orders/controller"));
+// 1. Order Functions (Refactored to v1)
+exports.createOrder = ordersController.createOrder;
+exports.completeOrder = ordersController.completeOrder;
+exports.updateOrderStatus = ordersController.updateOrderStatus;
+exports.submitRating = ordersController.submitRating;
 // 2. razorpayCreateOrder
 exports.razorpayCreateOrder = functions.https.onCall(async (data, context) => {
     var _a, _b;

@@ -14,7 +14,15 @@ export const createOrder = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
   }
 
-  return await service.createOrder(context.auth.uid, data);
+  try {
+    return await service.createOrder(context.auth.uid, data);
+  } catch (error: any) {
+    console.error("Error in createOrder:", error);
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    throw new functions.https.HttpsError("internal", error.message || "Unknown error occurred");
+  }
 });
 
 export const completeOrder = functions.https.onCall(async (data, context) => {

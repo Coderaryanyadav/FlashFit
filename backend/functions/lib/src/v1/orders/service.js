@@ -48,8 +48,12 @@ class OrderService {
                     throw new functions.https.HttpsError("not-found", `Product ${item.productId} not found`);
                 }
                 const productData = productDoc.data();
-                // Handle size-specific stock
-                if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
+                // Handle stock validation
+                if ((productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
+                    // Size-based stock
+                    if (!item.size) {
+                        throw new functions.https.HttpsError("invalid-argument", `Size selection is required for ${productData.title}`);
+                    }
                     const currentStock = productData.stock[item.size] || 0;
                     if (currentStock < item.quantity) {
                         throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData.title} size ${item.size}`);
@@ -57,11 +61,12 @@ class OrderService {
                     t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
                 }
                 else {
-                    // Fallback to global stock
+                    // Global stock (number)
                     const currentStock = typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number" ? productData.stock : 0;
                     if (currentStock < item.quantity) {
                         throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData === null || productData === void 0 ? void 0 : productData.title}`);
                     }
+                    // Only update if it's a number to avoid overwriting map with number (safety check)
                     if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
                         t.update(productRef, { stock: currentStock - item.quantity });
                     }
@@ -238,19 +243,55 @@ class OrderService {
                     throw new functions.https.HttpsError("permission-denied", "You are not authorized to update this order");
                 }
             }
+            t.update(orderRef, Object.assign(Object.assign({ status, updatedAt: firestore_1.FieldValue.serverTimestamp() }, (status === 'delivered' ? { deliveredAt: firestore_1.FieldValue.serverTimestamp() } : {})), { tracking: {
+                    status: status,
+                    logs: firestore_1.FieldValue.arrayUnion({
+                        status,
+                        timestamp: new Date(),
+                        description: description || `Order status updated to ${status}`
+                    })
+                } }));
+        });
+        return { success: true };
+    }
+    async submitRating(callerId, orderId, rating, review) {
+        const orderRef = db_1.db.collection("orders").doc(orderId);
+        await db_1.db.runTransaction(async (t) => {
+            const orderDoc = await t.get(orderRef);
+            if (!orderDoc.exists) {
+                throw new functions.https.HttpsError("not-found", "Order not found");
+            }
+            const orderData = orderDoc.data();
+            if ((orderData === null || orderData === void 0 ? void 0 : orderData.userId) !== callerId) {
+                throw new functions.https.HttpsError("permission-denied", "You can only rate your own orders");
+            }
+            if ((orderData === null || orderData === void 0 ? void 0 : orderData.status) !== "delivered" && (orderData === null || orderData === void 0 ? void 0 : orderData.status) !== "completed") {
+                throw new functions.https.HttpsError("failed-precondition", "Order must be delivered to submit a rating");
+            }
+            if (orderData === null || orderData === void 0 ? void 0 : orderData.rating) {
+                throw new functions.https.HttpsError("already-exists", "Order already rated");
+            }
+            if (!(orderData === null || orderData === void 0 ? void 0 : orderData.driverId)) {
+                throw new functions.https.HttpsError("failed-precondition", "No driver assigned to this order");
+            }
+            const driverRef = db_1.db.collection("drivers").doc(orderData.driverId);
+            const driverDoc = await t.get(driverRef);
+            if (!driverDoc.exists) {
+                throw new functions.https.HttpsError("not-found", "Driver not found");
+            }
+            const driverData = driverDoc.data();
+            const currentRating = (driverData === null || driverData === void 0 ? void 0 : driverData.rating) || 0;
+            const totalRatings = (driverData === null || driverData === void 0 ? void 0 : driverData.totalRatings) || 0;
+            const newTotalRatings = totalRatings + 1;
+            const newRating = ((currentRating * totalRatings) + rating) / newTotalRatings;
             t.update(orderRef, {
-                status,
-                tracking: {
-                    status,
-                    // logs: [] // Moved to subcollection
-                },
+                rating: rating,
+                review: review || null,
+                ratedAt: firestore_1.FieldValue.serverTimestamp()
             });
-            // Add log to subcollection
-            const logRef = orderRef.collection("logs").doc();
-            t.set(logRef, {
-                status,
-                timestamp: firestore_1.FieldValue.serverTimestamp(),
-                description: description || `Order status updated to ${status}`,
+            t.update(driverRef, {
+                rating: newRating,
+                totalRatings: newTotalRatings
             });
         });
         return { success: true };

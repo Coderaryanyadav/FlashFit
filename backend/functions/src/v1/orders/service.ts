@@ -29,19 +29,24 @@ export class OrderService {
 
         const productData = productDoc.data();
 
-        // Handle size-specific stock
-        if (item.size && productData?.stock && typeof productData.stock === "object") {
+        // Handle stock validation
+        if (productData?.stock && typeof productData.stock === "object") {
+          // Size-based stock
+          if (!item.size) {
+            throw new functions.https.HttpsError("invalid-argument", `Size selection is required for ${productData.title}`);
+          }
           const currentStock = productData.stock[item.size] || 0;
           if (currentStock < item.quantity) {
             throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData.title} size ${item.size}`);
           }
           t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
         } else {
-          // Fallback to global stock
+          // Global stock (number)
           const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
           if (currentStock < item.quantity) {
             throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData?.title}`);
           }
+          // Only update if it's a number to avoid overwriting map with number (safety check)
           if (typeof productData?.stock === "number") {
             t.update(productRef, { stock: currentStock - item.quantity });
           }
