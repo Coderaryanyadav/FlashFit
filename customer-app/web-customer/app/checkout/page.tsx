@@ -193,9 +193,13 @@ export default function CheckoutPage() {
       clearCart();
       setPlacedOrderId(orderId);
       setOrderSuccess(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error placing order: ", error);
-      alert("Failed to place order. Please try again.");
+      // Extract specific error message if available
+      const errorMessage = error?.message || "Failed to place order. Please try again.";
+      // Clean up Firebase error prefix if present
+      const cleanMessage = errorMessage.replace("INTERNAL: ", "").replace("INVALID_ARGUMENT: ", "").replace("FAILED_PRECONDITION: ", "");
+      alert(cleanMessage);
     } finally {
       setLoading(false);
     }
