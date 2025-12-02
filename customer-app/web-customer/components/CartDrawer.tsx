@@ -53,7 +53,7 @@ export function CartDrawer() {
                         </div>
                         <h3 className="text-xl font-bold">Your cart is empty</h3>
                         <p className="text-muted-foreground max-w-xs">
-                            Looks like you haven't added anything yet. Start shopping to fill it up!
+                            Looks like you haven&apos;t added anything yet. Start shopping to fill it up!
                         </p>
                         <SheetClose asChild>
                             <Button className="mt-4 rounded-full px-8">Start Shopping</Button>

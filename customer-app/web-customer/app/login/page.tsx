@@ -184,7 +184,7 @@ function LoginForm() {
 
                     {/* Footer */}
                     <p className="text-center text-xs text-gray-600 mt-6">
-                        By continuing, you agree to FlashFit's{" "}
+                        By continuing, you agree to FlashFit&apos;s{" "}
                         <Link href="/terms" className="text-gray-400 hover:text-white underline">
                             Terms of Service
                         </Link>{" "}

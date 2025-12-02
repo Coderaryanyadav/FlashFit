@@ -11,7 +11,7 @@ export function EmptyCart() {
                 <ShoppingBag className="h-12 w-12 text-neutral-600" />
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">Your cart is empty</h3>
-            <p className="text-gray-400 mb-8">Looks like you haven't added anything to your cart yet</p>
+            <p className="text-gray-400 mb-8">Looks like you haven&apos;t added anything to your cart yet</p>
             <Link href="/">
                 <Button className="bg-primary text-black hover:bg-primary/90 font-bold">
                     Start Shopping
@@ -45,7 +45,7 @@ export function EmptyOrders() {
                 <Package className="h-12 w-12 text-neutral-600" />
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">No orders yet</h3>
-            <p className="text-gray-400 mb-8">Looks like you haven't placed any orders yet</p>
+            <p className="text-gray-400 mb-8">Looks like you haven&apos;t placed any orders yet</p>
             <Link href="/">
                 <Button className="bg-primary text-black hover:bg-primary/90 font-bold">
                     Start Shopping
@@ -73,8 +73,8 @@ export function NoDeliveryArea() {
             <div className="w-24 h-24 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <MapPin className="h-12 w-12 text-yellow-500" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">We don't deliver here yet</h3>
-            <p className="text-gray-400 mb-8">We're expanding soon! Check back later</p>
+            <h3 className="text-2xl font-bold text-white mb-2">We don&apos;t deliver here yet</h3>
+            <p className="text-gray-400 mb-8">We&apos;re expanding soon! Check back later</p>
         </div>
     );
 }

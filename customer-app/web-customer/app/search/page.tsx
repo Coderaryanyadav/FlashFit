@@ -97,7 +97,7 @@ function SearchContent() {
               <ShoppingBag className="h-10 w-10 text-neutral-700" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">No results found</h2>
-            <p className="text-neutral-400">Try searching for "Streetwear", "Oversized", or "Gym Fits"</p>
+            <p className="text-neutral-400">Try searching for &quot;Streetwear&quot;, &quot;Oversized&quot;, or &quot;Gym Fits&quot;</p>
           </div>
         )}
       </div>

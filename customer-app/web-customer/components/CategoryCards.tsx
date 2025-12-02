@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 const categories = [
   { id: 'oversized', name: 'OVERSIZED', image: 'https://images.unsplash.com/photo-1594938298606-c5a78614975a?w=400' },
@@ -18,10 +19,11 @@ export default function CategoryCards() {
           href={`/collection?category=${category.id}`}
           className="flex-shrink-0 w-32 h-32 bg-gray-800 rounded-lg overflow-hidden relative group"
         >
-          <img
+          <Image
             src={category.image}
             alt={category.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <span className="text-white font-bold text-sm transform -rotate-12">

@@ -162,8 +162,8 @@ export function DecathlonHeader({
             {/* Category Nav */}
             <div className="border-t border-gray-200">
                 <div className="container mx-auto px-4 h-10 flex items-center gap-8 text-sm font-medium text-gray-600 overflow-x-auto">
-                    <Link href="/category/men" className="hover:text-blue-600 whitespace-nowrap">Men's</Link>
-                    <Link href="/category/women" className="hover:text-blue-600 whitespace-nowrap">Women's</Link>
+                    <Link href="/category/men" className="hover:text-blue-600 whitespace-nowrap">Men&apos;s</Link>
+                    <Link href="/category/women" className="hover:text-blue-600 whitespace-nowrap">Women&apos;s</Link>
                     <Link href="/category/running" className="hover:text-blue-600 whitespace-nowrap">Running</Link>
                     <Link href="/category/training" className="hover:text-blue-600 whitespace-nowrap">Training</Link>
                     <Link href="/category/yoga" className="hover:text-blue-600 whitespace-nowrap">Yoga</Link>

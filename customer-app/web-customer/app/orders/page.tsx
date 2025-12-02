@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Package, ChevronRight, Clock, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
+import Image from "next/image";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -78,7 +79,7 @@ export default function OrdersPage() {
               <Package className="h-10 w-10 text-neutral-600" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">No orders yet</h3>
-            <p className="text-neutral-400 mb-8">Looks like you haven't placed any orders yet.</p>
+            <p className="text-neutral-400 mb-8">Looks like you haven&apos;t placed any orders yet.</p>
             <Link href="/">
               <Button className="bg-primary text-black font-bold hover:bg-primary/90">Start Shopping</Button>
             </Link>
@@ -118,7 +119,7 @@ export default function OrdersPage() {
                     {/* Preview of items if available, otherwise generic */}
                     {order.items.slice(0, 3).map((item: any, i: number) => (
                       <div key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-neutral-900 bg-neutral-800 flex items-center justify-center text-xs font-bold text-white overflow-hidden">
-                        {item.image ? <img src={item.image} alt="" className="h-full w-full object-cover" /> : item.title[0]}
+                        {item.image ? <Image src={item.image} alt="" width={32} height={32} className="h-full w-full object-cover" /> : item.title[0]}
                       </div>
                     ))}
                     {order.items.length > 3 && (

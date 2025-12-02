@@ -267,7 +267,7 @@ export default function CheckoutPage() {
                 maxLength={10}
                 className="bg-neutral-800 border-white/10 text-white h-12 focus:border-primary"
               />
-              <p className="text-xs text-gray-500">We'll use this to contact you about your order</p>
+              <p className="text-xs text-gray-500">We&apos;ll use this to contact you about your order</p>
             </div>
 
             <div className="space-y-2">

@@ -14,7 +14,7 @@ export default function SupportPage() {
                 <div className="text-center mb-16">
                     <h1 className="text-4xl font-black mb-4">How can we help?</h1>
                     <p className="text-gray-400 text-lg">
-                        We're here for you 24/7. Choose how you'd like to connect.
+                        We&apos;re here for you 24/7. Choose how you&apos;d like to connect.
                     </p>
                 </div>
 

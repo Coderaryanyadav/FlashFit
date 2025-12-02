@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -97,10 +98,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 <div className="relative h-full w-full">
                     {/* Background Image */}
                     <div className="absolute inset-0 z-0 opacity-40">
-                        <img
+                        <Image
                             src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80"
                             alt="Fashion Background"
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
                     </div>

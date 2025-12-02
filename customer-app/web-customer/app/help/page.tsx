@@ -43,7 +43,7 @@ export default function HelpPage() {
                                     </span>
                                 </summary>
                                 <p className="text-gray-400 mt-3 group-open:animate-fadeIn">
-                                    You can track your order by clicking on the "Track Order" link in the header or visiting your profile page.
+                                    You can track your order by clicking on the &quot;Track Order&quot; link in the header or visiting your profile page.
                                 </p>
                             </details>
                             <div className="h-px bg-zinc-800 my-4" />

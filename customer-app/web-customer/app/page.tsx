@@ -183,7 +183,7 @@ export default function HomePage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600">MOMENT.</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto font-light tracking-wide">
-              Curated fashion delivered before you're ready to go out.
+              Curated fashion delivered before you&apos;re ready to go out.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
               <Link href="/category/urban-style">

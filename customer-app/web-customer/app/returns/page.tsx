@@ -21,7 +21,7 @@ export default function ReturnsPage() {
                         </div>
                         <h3 className="text-2xl font-bold mb-4">Instant Exchange</h3>
                         <p className="text-gray-400 mb-6">
-                            Size didn't fit? No worries. Request an exchange, and our delivery partner will bring the new size and pick up the old one instantly.
+                            Size didn&apos;t fit? No worries. Request an exchange, and our delivery partner will bring the new size and pick up the old one instantly.
                         </p>
                         <Button className="w-full bg-purple-600 hover:bg-purple-700">Request Exchange</Button>
                     </div>
