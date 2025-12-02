@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
+import { BackToTop } from "@/components/BackToTop";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -74,6 +75,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <BackToTop />
         </Providers>
       </body>
     </html>

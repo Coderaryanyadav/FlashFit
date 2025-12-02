@@ -15,6 +15,7 @@ import { Header } from "@/components/Header";
 import { LoginModal } from "@/components/LoginModal";
 import { CategoryService, Category } from "@/services/categoryService";
 import { ProductService } from "@/services/productService";
+import { Marquee } from "@/components/Marquee";
 
 const SERVICEABLE_PINCODE = "400059";
 
@@ -151,7 +152,6 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
-
       <Header
         onSearch={setSearchQuery}
         pincode={isPincodeVerified ? SERVICEABLE_PINCODE : "Select"}
@@ -160,6 +160,8 @@ export default function HomePage() {
       />
 
       <div className="pt-16">
+        <Marquee text="FLASH SALE • 60 MIN DELIVERY • FREE RETURNS • NEW DROPS DAILY •" />
+
         {/* Hero Section */}
         <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">

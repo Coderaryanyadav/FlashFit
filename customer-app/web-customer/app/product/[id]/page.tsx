@@ -13,7 +13,10 @@ import { Header } from "@/components/Header";
 import { motion } from "framer-motion";
 import { ProductReviews } from "@/components/ProductReviews";
 import { AddReviewModal } from "@/components/AddReviewModal";
+
 import { ProductService, Product } from "@/services/productService";
+import { SizeGuideModal } from "@/components/SizeGuideModal";
+import { Share2 } from "lucide-react";
 
 export default function ProductDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -30,6 +33,8 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [imgSrc, setImgSrc] = useState("");
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [sellerName, setSellerName] = useState<string>("");
 
 
@@ -118,6 +123,23 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
     });
   };
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.title,
+          text: `Check out ${product?.title} on FlashFit!`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log('Error sharing', error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -169,8 +191,15 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                 priority
                 onError={() => setImgSrc("https://placehold.co/500x600/1a1a1a/ffffff?text=No+Image")}
               />
-              <button className="absolute top-4 right-4 p-3 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all">
+              <button className="absolute top-4 right-4 p-3 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all z-10">
                 <Heart className="w-6 h-6" />
+              </button>
+
+              <button
+                onClick={handleShare}
+                className="absolute top-4 right-16 p-3 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all z-10"
+              >
+                <Share2 className="w-6 h-6" />
               </button>
 
               {/* AI Try-On Button */}
@@ -221,7 +250,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <label className="text-sm font-bold text-white uppercase tracking-wider">Select Size</label>
-                  <button className="text-xs text-primary font-medium hover:underline">Size Chart</button>
+                  <button onClick={() => setIsSizeGuideOpen(true)} className="text-xs text-primary font-medium hover:underline">Size Chart</button>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {["S", "M", "L", "XL", "XXL"].map((s) => {
@@ -336,6 +365,12 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           onSuccess={() => {
             // Reviews will auto-refresh
           }}
+        />
+
+        <SizeGuideModal
+          isOpen={isSizeGuideOpen}
+          onClose={() => setIsSizeGuideOpen(false)}
+          category={product.category || 'men'}
         />
 
         {/* Related Products */}
