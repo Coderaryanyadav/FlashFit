@@ -7,7 +7,7 @@ import { Plus, MapPin, Trash2, Home, Briefcase, ArrowLeft } from "lucide-react";
 import { auth, db } from "@/utils/firebase";
 import { doc, getDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -90,12 +90,13 @@ export default function AddressesPage() {
                 </Link>
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-black italic">SAVED ADDRESSES</h1>
+                    <Button
+                        className="bg-white text-black hover:bg-gray-200 font-bold"
+                        onClick={() => setIsAddOpen(true)}
+                    >
+                        <Plus className="h-4 w-4 mr-2" /> Add New
+                    </Button>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="bg-white text-black hover:bg-gray-200 font-bold">
-                                <Plus className="h-4 w-4 mr-2" /> Add New
-                            </Button>
-                        </DialogTrigger>
                         <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
                             <DialogHeader>
                                 <DialogTitle>Add New Address</DialogTitle>

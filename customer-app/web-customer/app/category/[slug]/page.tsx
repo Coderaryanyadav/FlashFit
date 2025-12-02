@@ -11,6 +11,7 @@ import { ChevronRight, SlidersHorizontal, X, Filter, ArrowUpDown, Star } from "l
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProductSkeleton } from "@/components/ProductSkeleton";
 
 // Force rebuild
 
@@ -303,7 +304,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         {loading ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                                 {[1, 2, 3, 4, 5, 6].map((n) => (
-                                    <div key={n} className="aspect-[4/5] bg-neutral-900 rounded-2xl animate-pulse border border-white/5" />
+                                    <ProductSkeleton key={n} />
                                 ))}
                             </div>
                         ) : filteredProducts.length > 0 ? (

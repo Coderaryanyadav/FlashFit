@@ -1,37 +1,36 @@
-"use client";
+import { Header } from "@/components/Header";
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-black text-white py-24 px-4">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-4xl font-black mb-8">Privacy Policy</h1>
-                <div className="space-y-6 text-gray-300">
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">1. Information We Collect</h2>
-                        <p>We collect information you provide directly to us, including name, email, phone number, delivery address, and payment information.</p>
+        <div className="min-h-screen bg-black text-white pb-20">
+            <Header />
+            <main className="container mx-auto px-4 pt-24 max-w-3xl">
+                <h1 className="text-4xl font-black italic mb-8">PRIVACY POLICY</h1>
+                <div className="prose prose-invert max-w-none">
+                    <p className="text-gray-400 mb-6">Last updated: December 2025</p>
+
+                    <section className="mb-8">
+                        <h2 className="text-2xl font-bold mb-4 text-white">1. Information We Collect</h2>
+                        <p className="text-gray-400">
+                            We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support. This includes your name, email, phone number, and shipping address.
+                        </p>
                     </section>
 
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">2. How We Use Your Information</h2>
-                        <p>We use the information we collect to process orders, communicate with you, and improve our services.</p>
+                    <section className="mb-8">
+                        <h2 className="text-2xl font-bold mb-4 text-white">2. How We Use Your Information</h2>
+                        <p className="text-gray-400">
+                            We use the information we collect to process your orders, communicate with you, and improve our services. We do not sell your personal data to third parties.
+                        </p>
                     </section>
 
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">3. Information Sharing</h2>
-                        <p>We do not sell your personal information. We share information only with delivery partners to fulfill your orders.</p>
-                    </section>
-
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">4. Data Security</h2>
-                        <p>We implement appropriate security measures to protect your personal information.</p>
-                    </section>
-
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-4">5. Contact Us</h2>
-                        <p>If you have questions about this Privacy Policy, please contact us at privacy@flashfit.com</p>
+                    <section className="mb-8">
+                        <h2 className="text-2xl font-bold mb-4 text-white">3. Security</h2>
+                        <p className="text-gray-400">
+                            We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration and destruction.
+                        </p>
                     </section>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }
