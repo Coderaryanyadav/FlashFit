@@ -6,12 +6,11 @@ import { cn } from "@/utils/cn";
 import {
   LayoutDashboard,
   ShoppingBag,
-  Users,
-  Truck,
   Settings,
   LogOut,
   Package,
-  BarChart3
+  BarChart3,
+  MessageSquare
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/utils/firebase";
@@ -36,16 +35,10 @@ const routes = [
     color: "text-pink-700",
   },
   {
-    label: "Drivers",
-    icon: Truck,
-    href: "/drivers",
-    color: "text-orange-700",
-  },
-  {
-    label: "Customers",
-    icon: Users,
-    href: "/customers",
-    color: "text-emerald-500",
+    label: "Reviews",
+    icon: MessageSquare,
+    href: "/reviews",
+    color: "text-yellow-500",
   },
   {
     label: "Analytics",
@@ -79,7 +72,7 @@ export function Sidebar() {
             </div>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
-            FlashFit <span className="text-xs font-normal text-gray-500 ml-1">Admin</span>
+            FlashFit <span className="text-xs font-normal text-gray-500 ml-1">Seller</span>
           </h1>
         </Link>
         <div className="space-y-2">
