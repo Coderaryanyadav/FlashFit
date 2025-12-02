@@ -7,6 +7,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, Star, TrendingUp, Package } from "lucide-react";
+import Image from "next/image";
 
 export default function ProfilePage() {
     const [user, setUser] = useState<any>(null);
@@ -39,7 +40,7 @@ export default function ProfilePage() {
                 <div className="relative group">
                     <div className="h-24 w-24 bg-zinc-800 rounded-full flex items-center justify-center border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.2)] overflow-hidden">
                         {stats.photoURL ? (
-                            <img src={stats.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                            <Image src={stats.photoURL} alt="Profile" fill className="object-cover" />
                         ) : (
                             <User className="h-12 w-12 text-gray-400" />
                         )}
@@ -117,10 +118,10 @@ export default function ProfilePage() {
                         <Star
                             key={star}
                             className={`h-6 w-6 ${(stats.rating || 0) >= star
-                                    ? "fill-yellow-500 text-yellow-500"
-                                    : (stats.rating || 0) >= star - 0.5
-                                        ? "fill-yellow-500/50 text-yellow-500"
-                                        : "text-zinc-700"
+                                ? "fill-yellow-500 text-yellow-500"
+                                : (stats.rating || 0) >= star - 0.5
+                                    ? "fill-yellow-500/50 text-yellow-500"
+                                    : "text-zinc-700"
                                 }`}
                         />
                     ))}

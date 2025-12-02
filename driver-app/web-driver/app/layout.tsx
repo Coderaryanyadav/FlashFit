@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -11,8 +11,14 @@ export const metadata: Metadata = {
     title: "FlashFit Driver | Delivery Partner App",
     description: "Manage deliveries, track earnings, and navigate to customers with the FlashFit Driver App.",
     manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
     themeColor: "#000000",
-    viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
 };
 
 export default function RootLayout({

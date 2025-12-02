@@ -96,7 +96,7 @@ export default function LoginPage() {
                 </form>
 
                 <p className="text-center text-gray-500 text-sm mt-6">
-                    Don't have an account? Contact admin
+                    Don&apos;t have an account? Contact admin
                 </p>
             </div>
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Power, Navigation, MapPin, Phone, IndianRupee, Package, Clock, CheckCircle, Loader2, ChevronDown, ChevronUp, AlertTriangle, Store } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 import { useDriverWorkflow } from "@/hooks/useDriverWorkflow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -251,8 +252,10 @@ export default function DriverHomePage() {
         const unsub = onSnapshot(q, (snapshot) => {
             const orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             // Simple distance filter mock (accept all for now to ensure visibility)
-            setAvailableOrders(orders);
-            if (orders.length > availableOrders.length) vibrate([50, 50, 50]);
+            setAvailableOrders(prev => {
+                if (orders.length > prev.length) vibrate([50, 50, 50]);
+                return orders;
+            });
         });
 
         return () => unsub();
@@ -561,9 +564,14 @@ export default function DriverHomePage() {
                                                 <div className="p-4 pt-0 space-y-3">
                                                     {activeOrder.items?.map((item: any, idx: number) => (
                                                         <div key={idx} className="flex gap-3 items-center bg-black/20 p-2 rounded-lg">
-                                                            <div className="h-10 w-10 bg-zinc-800 rounded-md flex items-center justify-center shrink-0">
+                                                            <div className="h-10 w-10 bg-zinc-800 rounded-md flex items-center justify-center shrink-0 relative overflow-hidden">
                                                                 {item.image ? (
-                                                                    <img src={item.image} alt={item.title} className="h-full w-full object-cover rounded-md" />
+                                                                    <Image
+                                                                        src={item.image}
+                                                                        alt={item.title}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
                                                                 ) : (
                                                                     <Package className="h-5 w-5 text-gray-500" />
                                                                 )}
