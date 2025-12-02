@@ -18,6 +18,7 @@ function SearchContent() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState("relevance");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -56,6 +57,12 @@ function SearchContent() {
     }
   };
 
+  const sortedProducts = [...products].sort((a, b) => {
+    if (sortBy === "price_asc") return a.price - b.price;
+    if (sortBy === "price_desc") return b.price - a.price;
+    return 0;
+  });
+
   return (
     <div className="min-h-screen bg-neutral-950 text-foreground">
       <Header />
@@ -63,7 +70,7 @@ function SearchContent() {
       <div className="container mx-auto px-4 pt-24 pb-12">
         <div className="max-w-2xl mx-auto mb-12">
           <h1 className="text-3xl font-bold text-white mb-6 text-center">Search Results</h1>
-          <form onSubmit={handleSearch} className="relative">
+          <form onSubmit={handleSearch} className="relative mb-6">
             <Input
               placeholder="Search for products..."
               value={searchQuery}
@@ -79,15 +86,30 @@ function SearchContent() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
             </Button>
           </form>
+
+          {/* Sort Control */}
+          {products.length > 0 && (
+            <div className="flex justify-end">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-neutral-900 text-white border border-neutral-800 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="relevance">Relevance</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-10 w-10 text-primary animate-spin" />
           </div>
-        ) : products.length > 0 ? (
+        ) : sortedProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {products.map((product) => (
+            {sortedProducts.map((product) => (
               <ProductCard key={product.id} {...product} />
             ))}
           </div>
