@@ -11,7 +11,8 @@ import {
   Settings,
   LogOut,
   Package,
-  BarChart3
+  BarChart3,
+  MessageSquare
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/utils/firebase";
@@ -52,6 +53,12 @@ const routes = [
     icon: BarChart3,
     href: "/analytics",
     color: "text-green-700",
+  },
+  {
+    label: "Reviews",
+    icon: MessageSquare,
+    href: "/reviews",
+    color: "text-yellow-500",
   },
   {
     label: "Settings",
