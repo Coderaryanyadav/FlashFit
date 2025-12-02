@@ -52,6 +52,11 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

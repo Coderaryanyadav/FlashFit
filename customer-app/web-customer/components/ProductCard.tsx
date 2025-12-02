@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Heart, HeartOff } from "lucide-react";
+import { Plus, Heart, HeartOff, CheckCircle2 } from "lucide-react";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { Button } from "./ui/button";
 import { useCartStore } from "@/store/useCartStore";
@@ -29,6 +29,7 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
 
   const [imgSrc, setImgSrc] = useState(image);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     setImgSrc(image);
@@ -46,9 +47,13 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
       stock: typeof stock === 'number' ? stock : (stock ? Object.values(stock).reduce((a, b) => a + b, 0) : 0)
     });
 
-    // Show confetti
+    // Show confetti and adding state
     setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000);
+    setIsAdding(true);
+    setTimeout(() => {
+      setShowConfetti(false);
+      setIsAdding(false);
+    }, 2000);
 
     toast.success("Added to cart", {
       description: `${title} is now in your cart.`,
@@ -127,13 +132,29 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
           </div>
           <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{category || "Collection"}</p>
 
-          <Button
-            className="w-full mt-3 bg-white text-black hover:bg-gray-200 font-bold h-10 rounded-xl shadow-none border-0 transition-transform active:scale-95"
+          <motion.button
+            className={`w-full mt-3 font-bold h-10 rounded-xl shadow-none border-0 transition-all active:scale-95 flex items-center justify-center gap-2 ${isAdding ? "bg-green-500 text-white" : "bg-white text-black hover:bg-gray-200"
+              }`}
             onClick={handleAddToCart}
+            whileTap={{ scale: 0.95 }}
+            disabled={isAdding}
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Add to Cart
-          </Button>
+            {isAdding ? (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle2 className="h-5 w-5" />
+                <span>Added</span>
+              </motion.div>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                <span>Add to Cart</span>
+              </>
+            )}
+          </motion.button>
         </div>
       </motion.div>
     </Link>
