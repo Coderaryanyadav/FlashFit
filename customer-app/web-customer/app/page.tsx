@@ -16,6 +16,7 @@ import { LoginModal } from "@/components/LoginModal";
 import { CategoryService, Category } from "@/services/categoryService";
 import { ProductService } from "@/services/productService";
 import { Marquee } from "@/components/Marquee";
+import { ProductSkeleton } from "@/components/ProductSkeleton";
 
 const SERVICEABLE_PINCODE = "400059";
 
@@ -259,14 +260,12 @@ export default function HomePage() {
             </Link>
           </div>
 
+          {/* ... */}
+
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12">
               {[1, 2, 3, 4, 5].map((n) => (
-                <div key={n} className="space-y-4">
-                  <div className="h-[400px] bg-zinc-900 animate-pulse" />
-                  <div className="h-4 bg-zinc-900 w-3/4 animate-pulse" />
-                  <div className="h-4 bg-zinc-900 w-1/2 animate-pulse" />
-                </div>
+                <ProductSkeleton key={n} />
               ))}
             </div>
           ) : trendingProducts.length > 0 ? (

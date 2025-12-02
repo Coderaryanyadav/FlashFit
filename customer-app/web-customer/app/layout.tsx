@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 import { BackToTop } from "@/components/BackToTop";
+import { NewsletterPopup } from "@/components/NewsletterPopup";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -76,6 +77,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <BackToTop />
+          <NewsletterPopup />
         </Providers>
       </body>
     </html>
