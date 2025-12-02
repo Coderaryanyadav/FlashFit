@@ -1,8 +1,10 @@
 const nextConfig = {
+    output: 'export',
     reactStrictMode: true,
     swcMinify: true,
     transpilePackages: ['@flashfit/core'],
     images: {
+        unoptimized: true,
         remotePatterns: [
             {
                 protocol: 'https',
