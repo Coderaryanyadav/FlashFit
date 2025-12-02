@@ -129,7 +129,29 @@ export default function CheckoutPage() {
     return true;
   };
 
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (items.length === 0 && !orderSuccess) {
+      router.push("/cart");
+    }
+  }, [items, router, orderSuccess]);
+
+  // Enforce Login
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        toast.error("Please login to place an order");
+        router.push("/login?redirect=/checkout");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
   const handlePlaceOrder = async () => {
+    if (items.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
     setLoading(true);
     try {
       const userId = auth.currentUser ? auth.currentUser.uid : "guest";

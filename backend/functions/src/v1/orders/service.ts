@@ -7,6 +7,10 @@ export class OrderService {
   async createOrder(userId: string, data: any) {
     const { items, address, storeId, totalAmount } = data;
 
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      throw new functions.https.HttpsError("invalid-argument", "Order must contain at least one item");
+    }
+
     // Calculate surge
     const hour = new Date().getHours();
     const surgeMultiplier = getSurgeMultiplier(hour);
