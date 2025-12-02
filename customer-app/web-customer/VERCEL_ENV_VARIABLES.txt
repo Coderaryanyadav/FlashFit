@@ -1,0 +1,60 @@
+# VERCEL ENVIRONMENT VARIABLES
+# Copy each variable below and add it to Vercel
+# Make sure to set them for: Production, Preview, and Development
+
+# ============================================
+# CLIENT-SIDE VARIABLES (NEXT_PUBLIC_*)
+# ============================================
+
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCcO8q6G08EPk047pncwT0UdJLiDB3WJ6I
+
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=studio-847805730-4f392.firebaseapp.com
+
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=studio-847805730-4f392
+
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=studio-847805730-4f392.firebasestorage.app
+
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=497323679456
+
+NEXT_PUBLIC_FIREBASE_APP_ID=1:497323679456:web:fef3f0e6e3af943969ba85
+
+# ============================================
+# SERVER-SIDE VARIABLES (Keep Secret!)
+# ============================================
+
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@studio-847805730-4f392.iam.gserviceaccount.com
+
+# ============================================
+# FIREBASE_PRIVATE_KEY
+# IMPORTANT: For this variable, paste the ENTIRE value below
+# INCLUDING the quotes and all line breaks
+# ============================================
+
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDM9Pc8Fhwvw6vq
+MK1Fig7TKAvWvrgXMbdbz3xuJE15LW0uVYkfOivio7PTDMjLfnWCZOplh0JXvKJv
+FKQ3yqTlTCz2ukjDPKt48Ra7/qHuKMV+C56Ea1xTPEqw2cstrzKU8v9anKZe7XNQ
+Jp/UoWKrnlT25vkfaeg18/k6d/2LCMA50078awDcChv40GkXiCN7wuSrM10jvyAm
+nQJb+Ef0jgf3sf5s6baIB42awXyU3DmVJvvsqwaK3P/Wxtc0nh9G0kKmU0mhodte
+RVbFjiOJatuOE8rsk5w7F9R9xDrXsGjAZzcciStDsOpQ+RMzkva142C2yrR64gby
+sBZr/fCPAgMBAAECggEATshU5qBbGlMdGIq4d/P/CdSpZFTwP14pbJ2fZ1kF/K/k
++XwAluPN7bLeUyBlaK9F7SbsYLVy33XPfGJTU2zOIKO83uQxRvbhtL37bq0Mwpai
+f3Zo6t634PjafwtgycE/8LhNRp/TZcbhXexS4LFeU7irUTLsjNIxY9fRs9Nevtuf
+4da/1tGf5083Fa9YGzqIU4qA0bM43uh8E6Py9Bh29IRDCnSAgclVRU/lrSb0LT6L
+GqdpCLKyEnjazA3jehL6h4LpiN82PoCP2/Qb433WHZqkveJRe8Arle+p2H6EiWob
+ddkVvQzBfTpiabufwVw3u/oPVBBX5UHH5vJ1iGUZGQKBgQD7v8Rrfp0e4pI3U/eQ
+MqWfxVyguhkw5hC+OGVKu1lSOVG63t53FBISTB/xRD9W0ClnTS31maVaLuVoo9tz
+X2+RYGdJ2Pqj9OgfRoKQSDRP4itiv20/c3LLAg7qW8g0vqF4bzQuiEyYhgy5V4SE
+URyYhSSX8L3xO5Ih2Fr04o0QRwKBgQDQau4x9oFw0cyUn39WA9EoL6/CcYAsvND6
+0aV/hY4LYc5tZStHgWQXlphfEymWCGQ5Rxan2Hq9FFHRU86zrqmjJjTROQRUn85q
+h/tcHw8bwSImi1X4bRBsG7WaM2DeIC+GZHN7JVZIdzqj/6tJXEGQfGzIYETeTZP1
+nn92MGtJeQKBgBtzO42lDqjRd7QEudfFTf3v3TvBTwHf9C9potHVP9YRXfIMXyGI
+1LeeCVWbZXSn2fvjlIFVMYx11JnmVAVugJHPezO4Lww1piHS5GWrGdkkBisMSHNE
+uV2dadbwDxKBPsYNChmQzxlKdJS5EEAFQCL5UZYnr+5f2n1KRBCzq0H9AoGAGr+O
+gHUNmcgjRHPP6N8miczM9tyQQa2d+ILNhbdDSqyrzJhuXIf7q5dVSOZxsOK00jEQ
+dEwxPHEOKxphbegdt2Wg47U4nA/CcyOum90UmFBKLL43M2Hz+Jv5y6eKaBejYdEk
+jQp2r2g163RVrF2dwIhngbPxQsKcGarU2vtN2akCgYADdvmwuVNnT5K9E8p70zQD
+gVK1rh+9gOmhH05kibRn76oU7Esoglbd5V5inmEp0lmWL/FwiUsPskx4GDsVcwuE
+lyDfVn2bkVVWj+LZSN6uSyM1f1kQ9TDPekTUhZEHzHICeqMvQQ/8dvOrhHexl/tx
+aGB8FePMNLQbb2ChT0/RQw==
+-----END PRIVATE KEY-----"

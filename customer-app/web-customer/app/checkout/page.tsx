@@ -5,27 +5,16 @@ import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, CreditCard, CheckCircle2, Truck, ShieldCheck, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, CheckCircle2, Truck, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { db, auth } from "@/utils/firebase";
-import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Header } from "@/components/Header";
-import { motion } from "framer-motion";
 import { OrderService } from "@/services/orderService";
-import dynamic from "next/dynamic";
-const AddressMap = dynamic(() => import("@/components/AddressMap").then((mod) => mod.AddressMap), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-zinc-900 rounded-xl">
-      <Loader2 className="animate-spin text-white" />
-    </div>
-  ),
-});
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCartStore();
@@ -223,127 +212,127 @@ export default function CheckoutPage() {
       <Header />
 
       {step === 1 ? (
-        // Step 1: Address & Details
-        <div className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-80px)]">
-          {/* Left: Map (Mobile: 40vh, Desktop: 70%) */}
-          <div className="w-full lg:w-[70%] h-[40vh] lg:h-full relative order-1 lg:order-1">
-            <AddressMap onAddressSelect={handleAddressSelect} />
+        // Step 1: Address & Details - Clean Form Layout
+        <div className="container mx-auto px-4 max-w-2xl py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <Link href="/cart" className="p-2 hover:bg-white/5 rounded-full transition-colors">
+              <ArrowLeft className="w-6 h-6 text-white" />
+            </Link>
+            <h1 className="text-3xl font-bold text-white">Delivery Details</h1>
           </div>
 
-          {/* Right: Form (Mobile: Auto height, Desktop: 30%) */}
-          <div className="w-full lg:w-[30%] h-auto lg:h-full overflow-y-auto bg-neutral-900 border-l border-white/10 p-6 order-2 lg:order-2 pb-24 lg:pb-6">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/cart" className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6 text-white" />
-              </Link>
-              <h1 className="text-2xl font-bold text-white">Delivery Details</h1>
+          {/* Saved Addresses */}
+          {savedAddresses.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">Saved Addresses</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {savedAddresses.map((addr) => (
+                  <div
+                    key={addr.id}
+                    onClick={() => handleSavedAddressClick(addr)}
+                    className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 cursor-pointer hover:border-primary/50 transition-all hover:bg-zinc-800/50"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span className="font-bold text-white">{addr.name}</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mb-1">{addr.address}</p>
+                    <p className="text-xs text-gray-500">{addr.city} - {addr.pincode}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Address Form */}
+          <div className="bg-neutral-900/50 p-8 rounded-2xl border border-white/10 space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-neutral-300">Full Name *</label>
+              <Input
+                name="fullName"
+                placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className="bg-neutral-800 border-white/10 text-white h-12 focus:border-primary"
+              />
             </div>
 
-            {/* Saved Addresses */}
-            {savedAddresses.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Saved Addresses</h3>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                  {savedAddresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      onClick={() => handleSavedAddressClick(addr)}
-                      className="min-w-[200px] bg-zinc-800 p-3 rounded-xl border border-zinc-700 cursor-pointer hover:border-white/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <MapPin className="h-3 w-3 text-primary" />
-                        <span className="font-bold text-sm text-white truncate">{addr.name}</span>
-                      </div>
-                      <p className="text-xs text-gray-400 line-clamp-2">{addr.address}</p>
-                      <p className="text-xs text-gray-500 mt-1">{addr.city} - {addr.pincode}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-neutral-300">Phone Number *</label>
+              <Input
+                name="phone"
+                placeholder="10-digit mobile number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                maxLength={10}
+                className="bg-neutral-800 border-white/10 text-white h-12 focus:border-primary"
+              />
+              <p className="text-xs text-gray-500">We'll use this to contact you about your order</p>
+            </div>
 
-            <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-neutral-300">Complete Address *</label>
+              <Input
+                name="address"
+                placeholder="Flat/House No., Building Name, Street, Area"
+                value={formData.address}
+                onChange={handleInputChange}
+                className="bg-neutral-800 border-white/10 text-white h-12 focus:border-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-neutral-400">Full Name</label>
+                <label className="text-sm font-medium text-neutral-300">City *</label>
                 <Input
-                  name="fullName"
-                  placeholder="John Doe"
-                  value={formData.fullName}
+                  name="city"
+                  placeholder="Mumbai"
+                  value={formData.city}
                   onChange={handleInputChange}
-                  className="bg-neutral-800 border-white/10 text-white h-12"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-neutral-400">Phone Number</label>
-                <Input
-                  name="phone"
-                  placeholder="10-digit number"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="bg-neutral-800 border-white/10 text-white h-12"
+                  className="bg-neutral-800 border-white/10 text-white h-12 focus:border-primary"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-neutral-400">Address</label>
+                <label className="text-sm font-medium text-neutral-300">Pincode *</label>
                 <Input
-                  name="address"
-                  placeholder="Flat, Building, Street"
-                  value={formData.address}
+                  name="pincode"
+                  placeholder="400001"
+                  value={formData.pincode}
                   onChange={handleInputChange}
-                  className="bg-neutral-800 border-white/10 text-white h-12"
+                  maxLength={6}
+                  className="bg-neutral-800 border-white/10 text-white h-12 focus:border-primary"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-neutral-400">City</label>
-                  <Input
-                    name="city"
-                    placeholder="Mumbai"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className="bg-neutral-800 border-white/10 text-white h-12"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-neutral-400">Pincode</label>
-                  <Input
-                    name="pincode"
-                    placeholder="400001"
-                    value={formData.pincode}
-                    onChange={handleInputChange}
-                    className="bg-neutral-800 border-white/10 text-white h-12"
-                  />
-                </div>
-              </div>
+            </div>
 
-              {/* Save Address Checkbox */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="saveAddress"
-                  checked={saveAddress}
-                  onChange={(e) => setSaveAddress(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary bg-neutral-800"
-                />
-                <label htmlFor="saveAddress" className="text-sm text-gray-300 cursor-pointer select-none">
-                  Save this address for future orders
-                </label>
-              </div>
+            {/* Save Address Checkbox */}
+            <div className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-xl">
+              <input
+                type="checkbox"
+                id="saveAddress"
+                checked={saveAddress}
+                onChange={(e) => setSaveAddress(e.target.checked)}
+                className="h-5 w-5 rounded border-gray-600 text-primary focus:ring-primary bg-neutral-700"
+              />
+              <label htmlFor="saveAddress" className="text-sm text-gray-300 cursor-pointer select-none">
+                Save this address for future orders
+              </label>
+            </div>
 
-              <div className="pt-4 border-t border-white/10">
-                <div className="flex justify-between text-lg font-bold text-white mb-6">
-                  <span>Total To Pay:</span>
-                  <span className="text-primary">₹{total()}</span>
-                </div>
-                <Button
-                  onClick={() => {
-                    if (validateStep1()) setStep(2);
-                  }}
-                  className="w-full bg-primary hover:bg-primary/90 text-black font-bold h-14 text-lg"
-                >
-                  Proceed to Payment
-                </Button>
+            {/* Total and CTA */}
+            <div className="pt-6 border-t border-white/10 space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-lg text-gray-400">Total Amount</span>
+                <span className="text-3xl font-bold text-primary">₹{total()}</span>
               </div>
+              <Button
+                onClick={() => {
+                  if (validateStep1()) setStep(2);
+                }}
+                className="w-full bg-primary hover:bg-primary/90 text-black font-bold h-14 text-lg rounded-xl"
+              >
+                Proceed to Payment
+              </Button>
             </div>
           </div>
         </div>
