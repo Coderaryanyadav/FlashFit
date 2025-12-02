@@ -57,6 +57,7 @@ export function CartSheet() {
                                             src={item.image}
                                             alt={item.title}
                                             fill
+                                            sizes="80px"
                                             className="object-cover"
                                         />
                                     )}

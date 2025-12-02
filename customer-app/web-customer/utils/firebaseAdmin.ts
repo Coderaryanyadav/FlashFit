@@ -7,20 +7,52 @@ function initializeFirebaseAdmin() {
 
     try {
         const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
+        // Validate all required environment variables
         if (!privateKey) {
-            console.error("FIREBASE_PRIVATE_KEY is not set");
-            throw new Error("Missing Firebase credentials");
+            console.error("❌ FIREBASE_PRIVATE_KEY is not set");
+            throw new Error("Missing FIREBASE_PRIVATE_KEY environment variable");
         }
 
-        // Handle both escaped and unescaped newlines
-        const formattedKey = privateKey.includes('\\n')
-            ? privateKey.replace(/\\n/g, '\n')
-            : privateKey;
+        if (!clientEmail) {
+            console.error("❌ FIREBASE_CLIENT_EMAIL is not set");
+            throw new Error("Missing FIREBASE_CLIENT_EMAIL environment variable");
+        }
+
+        if (!projectId) {
+            console.error("❌ NEXT_PUBLIC_FIREBASE_PROJECT_ID is not set");
+            throw new Error("Missing NEXT_PUBLIC_FIREBASE_PROJECT_ID environment variable");
+        }
+
+        // Handle multiple private key formats
+        let formattedKey = privateKey;
+
+        // Check if it's escaped newlines (\\n)
+        if (privateKey.includes('\\n')) {
+            formattedKey = privateKey.replace(/\\n/g, '\n');
+        }
+
+        // Check if it needs to be decoded from base64
+        if (!formattedKey.includes('BEGIN PRIVATE KEY')) {
+            try {
+                formattedKey = Buffer.from(privateKey, 'base64').toString('utf-8');
+            } catch (e) {
+                // Not base64, continue with current format
+            }
+        }
+
+        // Validate the key format
+        if (!formattedKey.includes('BEGIN PRIVATE KEY')) {
+            console.error("❌ Private key doesn't appear to be in correct format");
+            console.error("Key preview:", formattedKey.substring(0, 50) + "...");
+            throw new Error("Invalid private key format - must contain BEGIN PRIVATE KEY");
+        }
 
         const credential = admin.credential.cert({
-            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "studio-847805730-4f392",
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "firebase-adminsdk-fbsvc@studio-847805730-4f392.iam.gserviceaccount.com",
+            projectId: projectId,
+            clientEmail: clientEmail,
             privateKey: formattedKey,
         });
 
@@ -29,10 +61,17 @@ function initializeFirebaseAdmin() {
         });
 
         console.log("✅ Firebase Admin initialized successfully");
+        console.log("   Project ID:", projectId);
+        console.log("   Client Email:", clientEmail);
         return app;
     } catch (error: any) {
-        console.error("❌ Firebase Admin initialization failed:", error.message);
-        console.error("Stack:", error.stack);
+        console.error("❌ Firebase Admin initialization failed:");
+        console.error("   Error name:", error.name);
+        console.error("   Error message:", error.message);
+        if (error.code) {
+            console.error("   Error code:", error.code);
+        }
+        console.error("   Stack:", error.stack);
         throw error;
     }
 }

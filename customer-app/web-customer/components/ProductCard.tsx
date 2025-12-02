@@ -78,6 +78,7 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
             src={imgSrc}
             alt={title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
             onError={() => setImgSrc("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=80")}
           />
