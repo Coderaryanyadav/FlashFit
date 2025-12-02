@@ -98,6 +98,12 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
                 -{discount}% OFF
               </div>
             )}
+            {/* New Badge (Mock logic: if no discount, show NEW) */}
+            {!discount && (
+              <div className="bg-blue-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg uppercase tracking-wider animate-pulse">
+                NEW DROP
+              </div>
+            )}
             {(() => {
               const totalStock = typeof stock === 'number' ? stock : (stock ? Object.values(stock).reduce((a, b) => a + b, 0) : 0);
               return totalStock > 0 && totalStock < 5 && (
