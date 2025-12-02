@@ -282,6 +282,30 @@ export class OrderService {
           }),
         },
       });
+
+      // Handle stock restoration if cancelled
+      if (status === "cancelled" && orderData?.status !== "cancelled" && orderData?.status !== "returned") {
+        const items = orderData?.items || [];
+        for (const item of items) {
+          const productId = item.productId || item.id;
+          if (productId) {
+            const productRef = db.collection("products").doc(productId);
+            const productDoc = await t.get(productRef);
+            if (productDoc.exists) {
+              const productData = productDoc.data();
+              if (item.size && productData?.stock && typeof productData.stock === "object") {
+                const currentStock = productData.stock[item.size] || 0;
+                t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
+              } else {
+                const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
+                if (typeof productData?.stock === "number") {
+                  t.update(productRef, { stock: currentStock + (item.quantity || 1) });
+                }
+              }
+            }
+          }
+        }
+      }
     });
 
     return { success: true };
