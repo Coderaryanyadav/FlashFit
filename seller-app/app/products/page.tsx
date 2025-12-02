@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductDialog } from "@/components/ProductDialog";
 import { InventoryModal } from "@/components/InventoryModal";
+import Image from "next/image";
 
 // Type Definition
 export type Product = {
@@ -74,7 +75,7 @@ export default function ProductsPage() {
             cell: ({ row }) => {
                 return (
                     <div className="h-12 w-12 relative rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700">
-                        <img src={row.original.image} alt={row.original.title} className="object-cover h-full w-full" />
+                        <Image src={row.original.image} alt={row.original.title} fill className="object-cover" />
                     </div>
                 )
             }
