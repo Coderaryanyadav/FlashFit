@@ -20,11 +20,16 @@ export default function HelpPage() {
                                 <MessageCircle className="h-6 w-6" />
                             </div>
                             <div>
-                                <h3 className="font-bold">Live Chat</h3>
-                                <p className="text-sm text-gray-400">Wait time: ~2 mins</p>
+                                <h3 className="font-bold">WhatsApp Us</h3>
+                                <p className="text-sm text-gray-400">Fastest response time</p>
                             </div>
                         </div>
-                        <Button className="bg-white text-black font-bold hover:bg-gray-200">Start Chat</Button>
+                        <Button
+                            className="bg-green-600 text-white font-bold hover:bg-green-700"
+                            onClick={() => window.open('https://wa.me/918828095997', '_blank')}
+                        >
+                            Chat Now
+                        </Button>
                     </div>
 
                     <div className="bg-zinc-900 p-6 rounded-2xl border border-white/5 flex items-center justify-between">
