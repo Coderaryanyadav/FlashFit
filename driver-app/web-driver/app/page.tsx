@@ -25,7 +25,8 @@ export default function DriverHomePage() {
         deliveries: number;
         onlineSince: Date | null;
         todayOnlineMinutes: number;
-    }>({ earnings: 0, deliveries: 0, onlineSince: null, todayOnlineMinutes: 0 });
+        lastSeen: Date | null;
+    }>({ earnings: 0, deliveries: 0, onlineSince: null, todayOnlineMinutes: 0, lastSeen: null });
     const [currentOnlineMinutes, setCurrentOnlineMinutes] = useState(0);
 
     // Delivery Confirmation State
@@ -73,7 +74,8 @@ export default function DriverHomePage() {
                     earnings: data.totalEarnings || 0,
                     deliveries: data.totalDeliveries || 0,
                     onlineSince: data.onlineSince?.toDate() || null,
-                    todayOnlineMinutes: data.todayOnlineMinutes || 0
+                    todayOnlineMinutes: data.todayOnlineMinutes || 0,
+                    lastSeen: data.lastSeen?.toDate() || null
                 });
             } else {
                 console.log("Driver document does not exist"); // Debug log
@@ -135,18 +137,16 @@ export default function DriverHomePage() {
             if (newStatus) {
                 updates.onlineSince = serverTimestamp();
 
-                // Check if we need to reset todayOnlineMinutes (if last session was yesterday)
-                if (stats.onlineSince) {
-                    const lastOnlineDate = stats.onlineSince;
-                    const now = new Date();
-                    if (lastOnlineDate.getDate() !== now.getDate()) {
-                        updates.todayOnlineMinutes = 0;
-                    }
-                } else {
-                    // If no previous session recorded, check 'lastSeen' if available in future
-                    // For now, if we are starting fresh, we assume 0 or keep existing if same day.
-                    // But we don't have 'lastSeen' in stats state easily available to check day.
-                    // Let's rely on the fact that if we are going online, we just start tracking.
+                // Check if we need to reset todayOnlineMinutes
+                const lastSeenDate = stats.lastSeen || new Date(0);
+                const now = new Date();
+
+                // Check if last seen was on a different day
+                if (lastSeenDate.getDate() !== now.getDate() ||
+                    lastSeenDate.getMonth() !== now.getMonth() ||
+                    lastSeenDate.getFullYear() !== now.getFullYear()) {
+                    updates.todayOnlineMinutes = 0;
+                    console.log("New day detected, resetting todayOnlineMinutes");
                 }
             } else {
                 // Going offline: calculate and add session time

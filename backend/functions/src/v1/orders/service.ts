@@ -205,7 +205,7 @@ export class OrderService {
       );
 
       // Credit Driver Earnings (Flat fee for MVP)
-      const DELIVERY_FEE = 40;
+      const DELIVERY_FEE = 50;
       if (newStatus === "delivered" && orderData?.driverId) {
         const driverRef = db.collection("drivers").doc(orderData.driverId);
         t.update(driverRef, {
