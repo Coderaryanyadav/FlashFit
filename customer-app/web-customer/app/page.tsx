@@ -76,12 +76,30 @@ export default function HomePage() {
       return;
     }
 
-    const unsubscribe = ProductService.subscribeToProducts(SERVICEABLE_PINCODE, (productsData) => {
-      setProducts(productsData);
-      setLoading(false);
-    });
+    // ⚠️ CHANGED: Use one-time fetch instead of subscription to prevent "Page Unresponsive" / Freezing
+    // Real-time listeners can sometimes cause infinite loops if not handled perfectly.
+    // For the homepage, a one-time fetch is safer and sufficient.
+    const fetchProducts = async () => {
+      try {
+        const { getDocs, query, collection, where } = await import("firebase/firestore");
+        const q = query(
+          collection(db, "products"),
+          where("pincodes", "array-contains", SERVICEABLE_PINCODE)
+        );
+        const snapshot = await getDocs(q);
+        const productsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProducts(productsData);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchProducts();
   }, [isPincodeVerified]);
 
   // Safety timeout for loading
