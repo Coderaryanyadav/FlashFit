@@ -89,7 +89,7 @@ export const ProductService = {
                     id: doc.id,
                     ...doc.data()
                 } as Product))
-                .filter(p => p.pincodes?.includes(pincode))
+                .filter(p => p.pincodes?.some((pin: any) => String(pin) === pincode))
                 .sort((a, b) => {
                     const stockA = typeof a.stock === 'number' ? a.stock : (a.stock ? Object.values(a.stock).reduce((sum, val) => sum + val, 0) : 0);
                     const stockB = typeof b.stock === 'number' ? b.stock : (b.stock ? Object.values(b.stock).reduce((sum, val) => sum + val, 0) : 0);
