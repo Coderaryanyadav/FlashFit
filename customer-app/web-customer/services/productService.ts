@@ -150,5 +150,22 @@ export const ProductService = {
             console.error("Error fetching seller profile:", error);
             return null;
         }
+    },
+
+    async getProductsByPincode(pincode: string): Promise<Product[]> {
+        try {
+            const q = query(
+                collection(db, "products"),
+                where("pincodes", "array-contains", pincode)
+            );
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Product));
+        } catch (error) {
+            console.error("Error fetching products by pincode:", error);
+            return [];
+        }
     }
 };

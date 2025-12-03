@@ -39,64 +39,39 @@ export default function HomePage() {
     return () => unsub();
   }, []);
 
-  // Fetch Categories and Trending Products
+  // Consolidate all data fetching into one robust effect
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
-        const [cats, trends] = await Promise.all([
+        // Set defaults
+        setIsPincodeVerified(true);
+        setPincodeInput(SERVICEABLE_PINCODE);
+
+        // Fetch everything in parallel
+        const [cats, trends, pincodeProducts] = await Promise.all([
           CategoryService.getCategories(),
-          ProductService.getTrendingProducts(SERVICEABLE_PINCODE)
+          ProductService.getTrendingProducts(SERVICEABLE_PINCODE),
+          ProductService.getProductsByPincode(SERVICEABLE_PINCODE)
         ]);
+
         setCategories(cats);
         setTrendingProducts(trends);
+        setProducts(pincodeProducts);
+
+        console.log("Data loaded:", {
+          categories: cats.length,
+          trending: trends.length,
+          products: pincodeProducts.length
+        });
+
       } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Set verified to true by default to bypass modal
-  useEffect(() => {
-    setIsPincodeVerified(true);
-    setPincodeInput(SERVICEABLE_PINCODE);
-  }, []);
-
-  useEffect(() => {
-    if (!isPincodeVerified) {
-      return;
-    }
-
-    // ⚠️ CHANGED: Use one-time fetch instead of subscription to prevent "Page Unresponsive" / Freezing
-    // Real-time listeners can sometimes cause infinite loops if not handled perfectly.
-    // For the homepage, a one-time fetch is safer and sufficient.
-    const fetchProducts = async () => {
-      try {
-        const { getDocs, query, collection, where } = await import("firebase/firestore");
-        const q = query(
-          collection(db, "products"),
-          where("pincodes", "array-contains", SERVICEABLE_PINCODE)
-        );
-        const snapshot = await getDocs(q);
-        const productsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setProducts(productsData);
-      } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error loading homepage data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, [isPincodeVerified]);
-
-  // Safety timeout for loading
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 5000);
-    return () => clearTimeout(timer);
+    loadData();
   }, []);
 
   const filteredProducts = products.filter((product) =>
