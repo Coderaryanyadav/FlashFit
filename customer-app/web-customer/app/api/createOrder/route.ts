@@ -256,9 +256,9 @@ export async function POST(request: Request) {
                 // NEVER trust client-sent prices - always use database prices
                 const actualPrice = productData.price || 0;
 
-                // Verify client price matches server price (with 1% tolerance for rounding)
-                if (item.price && Math.abs(item.price - actualPrice) > actualPrice * 0.01) {
-                    throw new Error(`Price mismatch for ${productData.title}. Please refresh and try again.`);
+                // Verify client price matches server price EXACTLY (zero tolerance)
+                if (item.price && item.price !== actualPrice) {
+                    throw new Error(`Price mismatch for ${productData.title}. Expected: ₹${actualPrice}, Received: ₹${item.price}. Please refresh your cart.`);
                 }
 
                 // Use ACTUAL database price for calculation

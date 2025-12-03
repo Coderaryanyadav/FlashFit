@@ -8,21 +8,29 @@ export async function GET() {
         const db = getAdminDb();
 
         // Strict Timeout (8 seconds)
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore Operation Timed Out")), 8000)
-        );
+        let timeoutId: NodeJS.Timeout | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error("Firestore Operation Timed Out")), 8000);
+        });
 
-        const snapshot: any = await Promise.race([
-            db.collection('categories').orderBy('name').get(),
-            timeoutPromise
-        ]);
+        try {
+            const snapshot: any = await Promise.race([
+                db.collection('categories').orderBy('name').get(),
+                timeoutPromise
+            ]);
 
-        const categories = snapshot.docs.map((doc: any) => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+            clearTimeout(timeoutId); // Clear timeout on success
 
-        return NextResponse.json(categories);
+            const categories = snapshot.docs.map((doc: any) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            return NextResponse.json(categories);
+        } catch (raceError: any) {
+            clearTimeout(timeoutId!); // Clear timeout on error
+            throw raceError; // Re-throw to outer catch
+        }
     } catch (error: any) {
         console.error("Categories API Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });

@@ -11,25 +11,33 @@ export async function GET(request: Request) {
         const db = getAdminDb();
 
         // Strict Timeout for Firestore (8 seconds)
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore Operation Timed Out")), 8000)
-        );
+        let timeoutId: NodeJS.Timeout | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error("Firestore Operation Timed Out")), 8000);
+        });
 
-        // Fetch all products (limit 100 for safety)
-        const snapshot: any = await Promise.race([
-            db.collection('products').limit(100).get(),
-            timeoutPromise
-        ]);
+        try {
+            // Fetch all products (limit 100 for safety)
+            const snapshot: any = await Promise.race([
+                db.collection('products').limit(100).get(),
+                timeoutPromise
+            ]);
 
-        const products = snapshot.docs
-            .map((doc: any) => ({ id: doc.id, ...doc.data() }))
-            .filter((p: any) => {
-                // Robust filtering for pincode (string or number)
-                if (!p.pincodes) return false;
-                return Array.isArray(p.pincodes) && p.pincodes.some((pin: any) => String(pin) === pincode);
-            });
+            clearTimeout(timeoutId); // Clear timeout on success
 
-        return NextResponse.json(products);
+            const products = snapshot.docs
+                .map((doc: any) => ({ id: doc.id, ...doc.data() }))
+                .filter((p: any) => {
+                    // Robust filtering for pincode (string or number)
+                    if (!p.pincodes) return false;
+                    return Array.isArray(p.pincodes) && p.pincodes.some((pin: any) => String(pin) === pincode);
+                });
+
+            return NextResponse.json(products);
+        } catch (raceError: any) {
+            clearTimeout(timeoutId!); // Clear timeout on error
+            throw raceError; // Re-throw to outer catch
+        }
     } catch (error: any) {
         console.error("API Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
