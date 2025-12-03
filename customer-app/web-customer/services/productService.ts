@@ -55,7 +55,7 @@ export const ProductService = {
                 const snapshot = await getDocs(q);
                 const products = snapshot.docs.map(doc => ({
                     id: doc.id,
-                    ...doc.data()
+                    ...(doc.data() as any)
                 } as Product));
 
                 productCache[cacheKey] = { data: products, timestamp: now };
