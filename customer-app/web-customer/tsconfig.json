@@ -8,11 +8,11 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -25,12 +25,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@flashfit/types": [
-        "../../backend/packages/types"
-      ],
-      "@flashfit/core": [
-        "../../backend/packages/core"
       ]
     }
   },
