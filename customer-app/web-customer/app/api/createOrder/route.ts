@@ -173,6 +173,9 @@ export async function POST(request: Request) {
             // Recalculate final amount with surge
             const finalAmount = calculatedTotal * surgeMultiplier;
 
+            // Initialize tracking logs array
+            const trackingLogs: any[] = [];
+
             // 2. Create Order
             const orderData: any = {
                 id: orderRef.id,
@@ -192,7 +195,7 @@ export async function POST(request: Request) {
                 createdAt: FieldValue.serverTimestamp(),
                 tracking: {
                     status: "placed",
-                    logs: []
+                    logs: trackingLogs
                 },
             };
 
@@ -208,21 +211,34 @@ export async function POST(request: Request) {
                     orderData.status = "assigned";
                     orderData.assignedAt = FieldValue.serverTimestamp();
                     orderData.tracking.status = "assigned";
-                    orderData.tracking.logs.push({ status: "assigned", timestamp: new Date(), driverId: nearestDriver.id });
+                    trackingLogs.push({
+                        status: "assigned",
+                        timestamp: new Date(),
+                        driverId: nearestDriver.id,
+                        description: "Order placed and driver assigned"
+                    });
 
                     t.update(driverRef, { currentOrderId: orderRef.id });
+                } else {
+                    trackingLogs.push({
+                        status: "placed",
+                        timestamp: new Date(),
+                        description: "Order placed successfully"
+                    });
                 }
+            } else {
+                trackingLogs.push({
+                    status: "placed",
+                    timestamp: new Date(),
+                    description: "Order placed successfully"
+                });
             }
 
-            t.set(orderRef, orderData);
+            // Update tracking logs in order data
+            orderData.tracking.logs = trackingLogs;
 
-            // 4. Add initial log
-            const logRef = orderRef.collection("logs").doc();
-            t.set(logRef, {
-                status: orderData.status,
-                timestamp: FieldValue.serverTimestamp(),
-                description: orderData.status === 'assigned' ? "Order placed and driver assigned" : "Order placed successfully",
-            });
+            // Write order (single write operation)
+            t.set(orderRef, orderData);
         });
 
         return NextResponse.json({ orderId: orderRef.id, success: true });
