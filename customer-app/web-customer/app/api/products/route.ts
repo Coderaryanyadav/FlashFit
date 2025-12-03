@@ -1,4 +1,3 @@
-```typescript
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/utils/firebaseAdmin";
 import { handleApiError } from "@/lib/api-error-handler";
@@ -44,4 +43,3 @@ export async function GET(request: Request) {
         return handleApiError(error);
     }
 }
-```

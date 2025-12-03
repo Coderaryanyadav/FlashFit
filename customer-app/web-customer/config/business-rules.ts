@@ -1,9 +1,9 @@
 // Business Rules Configuration
 export const ORDER_LIMITS = {
-    MAX_ITEMS: 50,
+    MAX_ITEMS_PER_ORDER: 50,
     MAX_QUANTITY_PER_ITEM: 10,
-    MAX_AMOUNT: 500_000,
-    MIN_AMOUNT: 100,
+    MAX_ORDER_AMOUNT: 500_000,
+    MIN_ORDER_AMOUNT: 100,
 } as const;
 
 export const DELIVERY_ZONES = {
