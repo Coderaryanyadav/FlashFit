@@ -37,7 +37,7 @@ Once the index status shows "Enabled":
 - Refresh your FlashFit app
 - The error will be gone
 - Queries will work perfectly
-
+the
 ---
 
 ## 📊 WHAT THIS INDEX DOES

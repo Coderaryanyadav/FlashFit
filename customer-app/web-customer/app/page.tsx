@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
 import Image from "next/image";
-import { Header } from "@/components/Header";
 import { CategoryService, Category } from "@/services/categoryService";
 import { ProductService } from "@/services/productService";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
@@ -155,12 +154,6 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
-      <Header
-        onSearch={setSearchQuery}
-        pincode={isPincodeVerified ? SERVICEABLE_PINCODE : "Select"}
-        onPincodeClick={() => setShowPincodeModal(true)}
-        onLoginClick={() => setShowLoginModal(true)}
-      />
 
       <div className="pt-16">
         <Marquee text="FLASH SALE • 60 MIN DELIVERY • FREE RETURNS • NEW DROPS DAILY •" />
