@@ -10,11 +10,19 @@ export async function GET(request: Request) {
 
         const db = getAdminDb();
 
+        // Strict Timeout for Firestore (8 seconds)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore Operation Timed Out")), 8000)
+        );
+
         // Fetch all products (limit 100 for safety)
-        const snapshot = await db.collection('products').limit(100).get();
+        const snapshot: any = await Promise.race([
+            db.collection('products').limit(100).get(),
+            timeoutPromise
+        ]);
 
         const products = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .map((doc: any) => ({ id: doc.id, ...doc.data() }))
             .filter((p: any) => {
                 // Robust filtering for pincode (string or number)
                 if (!p.pincodes) return false;

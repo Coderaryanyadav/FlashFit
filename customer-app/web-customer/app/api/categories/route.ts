@@ -6,9 +6,18 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const db = getAdminDb();
-        const snapshot = await db.collection('categories').orderBy('name').get();
 
-        const categories = snapshot.docs.map(doc => ({
+        // Strict Timeout (8 seconds)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore Operation Timed Out")), 8000)
+        );
+
+        const snapshot: any = await Promise.race([
+            db.collection('categories').orderBy('name').get(),
+            timeoutPromise
+        ]);
+
+        const categories = snapshot.docs.map((doc: any) => ({
             id: doc.id,
             ...doc.data()
         }));
