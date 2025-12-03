@@ -39,7 +39,7 @@ export default function DebugPage() {
                 <div className="p-4 bg-red-900 border border-red-500 rounded mb-4">
                     <h2 className="font-bold">Error Fetching Data:</h2>
                     <pre>{error}</pre>
-                    <p className="mt-2 text-sm">If this says "Missing or insufficient permissions", check Firestore Rules.</p>
+                    <p className="mt-2 text-sm">If this says &quot;Missing or insufficient permissions&quot;, check Firestore Rules.</p>
                 </div>
             )}
 
