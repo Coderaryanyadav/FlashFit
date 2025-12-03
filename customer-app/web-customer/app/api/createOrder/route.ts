@@ -13,6 +13,19 @@ import { db, auth } from "@/utils/firebase"; // We need admin SDK for transactio
 import { getAdminDb, getAdminAuth } from "@/utils/firebaseAdmin";
 import { FieldValue, Transaction } from "firebase-admin/firestore";
 
+// Security Configuration
+const SERVICEABLE_PINCODES = ["400059", "400060", "400062", "400063", "400064", "400065", "400066", "400067", "400068", "400069"]; // Mumbai Goregaon area
+const MUMBAI_BOUNDS = {
+    minLat: 18.90,
+    maxLat: 19.30,
+    minLng: 72.75,
+    maxLng: 72.95
+};
+const MAX_ITEMS_PER_ORDER = 50;
+const MAX_QUANTITY_PER_ITEM = 10;
+const MAX_ORDER_AMOUNT = 500000; // 5 lakhs
+const MIN_ORDER_AMOUNT = 100;
+
 export async function POST(request: Request) {
     try {
         // Initialize Firebase Admin lazily
@@ -42,6 +55,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Unauthorized: Invalid token" }, { status: 401 });
         }
 
+        // Verify email is verified
+        if (!decodedToken.email_verified) {
+            return NextResponse.json({ error: "Please verify your email before placing an order" }, { status: 403 });
+        }
+
         const body = await request.json();
         const { items, address, storeId, totalAmount, userId } = body;
 
@@ -52,6 +70,81 @@ export async function POST(request: Request) {
         if (!items || !address || !storeId || !totalAmount || !userId) {
             console.error("Missing required fields:", { items: !!items, address: !!address, storeId: !!storeId, totalAmount: !!totalAmount, userId: !!userId });
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        // ============ SECURITY VALIDATIONS ============
+
+        // 1. Validate Pincode (Serviceable Area Check)
+        if (!address.pincode || typeof address.pincode !== 'string') {
+            return NextResponse.json({ error: "Invalid pincode format" }, { status: 400 });
+        }
+        const cleanPincode = address.pincode.trim();
+        if (!SERVICEABLE_PINCODES.includes(cleanPincode)) {
+            return NextResponse.json({
+                error: `Sorry, we don't deliver to pincode ${cleanPincode}. Currently serving: ${SERVICEABLE_PINCODES.join(', ')}`
+            }, { status: 400 });
+        }
+
+        // 2. Validate Location (Prevent London/International Orders)
+        if (!address.location || typeof address.location.lat !== 'number' || typeof address.location.lng !== 'number') {
+            return NextResponse.json({ error: "Invalid location coordinates" }, { status: 400 });
+        }
+        const { lat, lng } = address.location;
+        if (lat < MUMBAI_BOUNDS.minLat || lat > MUMBAI_BOUNDS.maxLat ||
+            lng < MUMBAI_BOUNDS.minLng || lng > MUMBAI_BOUNDS.maxLng) {
+            return NextResponse.json({
+                error: "Delivery location is outside our service area (Mumbai region only)"
+            }, { status: 400 });
+        }
+
+        // 3. Validate Address Fields (Prevent Injection/Malicious Input)
+        const addressFields = ['name', 'phone', 'street', 'city'];
+        for (const field of addressFields) {
+            if (!address[field] || typeof address[field] !== 'string') {
+                return NextResponse.json({ error: `Invalid address field: ${field}` }, { status: 400 });
+            }
+            // Check for suspicious patterns (SQL injection, XSS, etc.)
+            const value = address[field].trim();
+            if (value.length < 2 || value.length > 200) {
+                return NextResponse.json({ error: `${field} must be between 2 and 200 characters` }, { status: 400 });
+            }
+            if (/<script|javascript:|onerror=|onclick=/i.test(value)) {
+                return NextResponse.json({ error: "Invalid characters detected in address" }, { status: 400 });
+            }
+        }
+
+        // 4. Validate Phone Number (Indian format)
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(address.phone.replace(/\s+/g, ''))) {
+            return NextResponse.json({ error: "Invalid Indian phone number format" }, { status: 400 });
+        }
+
+        // 5. Validate Items Array
+        if (!Array.isArray(items) || items.length === 0) {
+            return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+        }
+        if (items.length > MAX_ITEMS_PER_ORDER) {
+            return NextResponse.json({ error: `Maximum ${MAX_ITEMS_PER_ORDER} items allowed per order` }, { status: 400 });
+        }
+
+        // 6. Validate Each Item
+        for (const item of items) {
+            if (!item.productId || typeof item.productId !== 'string') {
+                return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+            }
+            if (!item.quantity || typeof item.quantity !== 'number' || item.quantity < 1 || item.quantity > MAX_QUANTITY_PER_ITEM) {
+                return NextResponse.json({ error: `Invalid quantity. Must be between 1 and ${MAX_QUANTITY_PER_ITEM}` }, { status: 400 });
+            }
+            if (item.price && (typeof item.price !== 'number' || item.price < 0)) {
+                return NextResponse.json({ error: "Invalid item price" }, { status: 400 });
+            }
+        }
+
+        // 7. Validate Total Amount (Prevent Price Tampering)
+        if (typeof totalAmount !== 'number' || totalAmount < MIN_ORDER_AMOUNT || totalAmount > MAX_ORDER_AMOUNT) {
+            return NextResponse.json({
+                error: `Order amount must be between ₹${MIN_ORDER_AMOUNT} and ₹${MAX_ORDER_AMOUNT}`
+            }, { status: 400 });
         }
 
         // Calculate surge (Simplified)
@@ -78,7 +171,7 @@ export async function POST(request: Request) {
 
         // FETCH DRIVERS (Outside Transaction for initial query, then re-check inside)
 
-        // Rate Limiting: Check last order time
+        // Rate Limiting: Check last order time (Enhanced)
         const lastOrderSnap = await adminDb.collection("orders")
             .where("userId", "==", userId)
             .orderBy("createdAt", "desc")
@@ -90,10 +183,23 @@ export async function POST(request: Request) {
             if (lastOrder.createdAt) {
                 const lastOrderTime = lastOrder.createdAt.toDate().getTime();
                 const now = Date.now();
-                if (now - lastOrderTime < 60000) { // 1 minute
-                    return NextResponse.json({ error: "Please wait a moment before placing another order." }, { status: 429 });
+                // Prevent rapid order spam (30 seconds minimum)
+                if (now - lastOrderTime < 30000) {
+                    return NextResponse.json({ error: "Please wait 30 seconds before placing another order." }, { status: 429 });
                 }
             }
+        }
+
+        // Daily Order Limit (Prevent Abuse)
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayOrdersSnap = await adminDb.collection("orders")
+            .where("userId", "==", userId)
+            .where("createdAt", ">=", todayStart)
+            .get();
+
+        if (todayOrdersSnap.size >= 20) { // Max 20 orders per day
+            return NextResponse.json({ error: "Daily order limit reached. Please contact support if you need to place more orders." }, { status: 429 });
         }
 
         const driversSnap = await adminDb.collection("drivers")
@@ -118,8 +224,8 @@ export async function POST(request: Request) {
             }
         });
 
-        // Transaction
-        await adminDb.runTransaction(async (t: Transaction) => {
+        // Transaction with Timeout Protection
+        const transactionPromise = adminDb.runTransaction(async (t: Transaction) => {
             let calculatedTotal = 0;
             const productUpdates: { ref: any; data: any }[] = [];
             let maxDeliveryDays = 2;
@@ -146,8 +252,17 @@ export async function POST(request: Request) {
 
                 const productData = productDoc.data() as any;
 
-                // Server-side price validation
-                calculatedTotal += (productData.price || 0) * item.quantity;
+                // ⚠️ CRITICAL: Server-side price validation (Prevent Price Tampering)
+                // NEVER trust client-sent prices - always use database prices
+                const actualPrice = productData.price || 0;
+
+                // Verify client price matches server price (with 1% tolerance for rounding)
+                if (item.price && Math.abs(item.price - actualPrice) > actualPrice * 0.01) {
+                    throw new Error(`Price mismatch for ${productData.title}. Please refresh and try again.`);
+                }
+
+                // Use ACTUAL database price for calculation
+                calculatedTotal += actualPrice * item.quantity;
 
                 // Handle stock validation
                 if (productData?.stock && typeof productData.stock === "object") {
@@ -186,11 +301,17 @@ export async function POST(request: Request) {
                 if (itemDeliveryDays > maxDeliveryDays) maxDeliveryDays = itemDeliveryDays;
             });
 
+            // Verify total amount matches calculated total (with surge)
             const expectedDeliveryDate = new Date();
             expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
 
             // Recalculate final amount with surge
             const finalAmount = calculatedTotal * surgeMultiplier;
+
+            // Verify client-sent total is close to calculated total (allow 2% variance for rounding/surge timing)
+            if (Math.abs(totalAmount - finalAmount) > finalAmount * 0.02) {
+                throw new Error(`Price verification failed. Expected: ₹${finalAmount.toFixed(2)}, Received: ₹${totalAmount}. Please refresh your cart.`);
+            }
 
             // Initialize tracking logs array
             const trackingLogs: any[] = [];
@@ -258,6 +379,13 @@ export async function POST(request: Request) {
             // Create order
             t.set(orderRef, orderData);
         });
+
+        // Add timeout to prevent hanging (25 seconds)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Transaction timeout - please try again")), 25000)
+        );
+
+        await Promise.race([transactionPromise, timeoutPromise]);
 
         return NextResponse.json({ orderId: orderRef.id, success: true });
 

@@ -166,7 +166,7 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
 
-      <div className="pt-16">
+      <div>
         <Marquee text="FLASH SALE • 60 MIN DELIVERY • FREE RETURNS • NEW DROPS DAILY •" />
 
         {/* Hero Section */}
