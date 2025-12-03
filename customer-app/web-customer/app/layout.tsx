@@ -7,7 +7,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 import { BackToTop } from "@/components/BackToTop";
-import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { MobileNav } from "@/components/MobileNav";
 import { SessionTimeout } from "@/components/SessionTimeout";
 import React from "react";
