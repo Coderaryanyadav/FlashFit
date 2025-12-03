@@ -53,3 +53,21 @@ coverage
 .temp
 temp
 tmp
+
+# Documentation (internal)
+*AUDIT*.md
+*TRANSFORMATION*.md
+*DEPLOYMENT*.md
+*PRODUCTION*.md
+*REPORT*.md
+*SUMMARY*.md
+*CHECKLIST*.md
+*GUIDE*.md
+*PATTERN*.md
+instructions.md
+backend/docs/
+admin-dashboard/web-admin/SYSTEM_AUDIT.md
+
+# Seed data dependencies
+seed-data/node_modules/
+seed-data/package-lock.json
