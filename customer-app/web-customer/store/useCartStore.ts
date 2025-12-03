@@ -72,22 +72,32 @@ export const useCartStore = create<CartStore>()(
                 if (items.length === 0) return;
 
                 try {
-                    const { doc, getDoc } = await import("firebase/firestore");
+                    const { query, collection, where, documentId, getDocs } = await import("firebase/firestore");
                     const { db } = await import("@/utils/firebase");
                     const { toast } = await import("sonner");
 
                     const updatedItems = [...items];
                     let hasChanges = false;
 
-                    for (let i = 0; i < updatedItems.length; i++) {
-                        const item = updatedItems[i];
-                        const productRef = doc(db, "products", item.id);
-                        const productSnap = await getDoc(productRef);
+                    // Batch fetch all products in one query (fixes N+1)
+                    const productIds = items.map(item => item.id);
+                    const productsQuery = query(
+                        collection(db, "products"),
+                        where(documentId(), "in", productIds.slice(0, 10)) // Firestore limit
+                    );
+                    const productsSnapshot = await getDocs(productsQuery);
+                    const productsMap = new Map();
+                    productsSnapshot.docs.forEach(doc => {
+                        productsMap.set(doc.id, doc.data());
+                    });
 
-                        if (!productSnap.exists()) {
+                    for (let i = updatedItems.length - 1; i >= 0; i--) {
+                        const item = updatedItems[i];
+                        const productData = productsMap.get(item.id);
+
+                        if (!productData) {
                             // Product deleted
                             updatedItems.splice(i, 1);
-                            i--;
                             hasChanges = true;
                             toast.error(`Item removed: ${item.title}`, {
                                 description: "This product is no longer available."
@@ -95,19 +105,14 @@ export const useCartStore = create<CartStore>()(
                             continue;
                         }
 
-                        const data = productSnap.data();
-
                         // Check for price change
-                        if (data.price !== item.price) {
-                            updatedItems[i] = { ...item, price: data.price };
+                        if (productData.price !== item.price) {
+                            updatedItems[i] = { ...item, price: productData.price };
                             hasChanges = true;
                             toast.info(`Price updated: ${item.title}`, {
-                                description: `Price changed from ₹${item.price} to ₹${data.price}`
+                                description: `Price changed from ₹${item.price} to ₹${productData.price}`
                             });
                         }
-
-                        // Check for stock availability (Optional: could remove if OOS)
-                        // For now, we just validate existence and price.
                     }
 
                     if (hasChanges) {
