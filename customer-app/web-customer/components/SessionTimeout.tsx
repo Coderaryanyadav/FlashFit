@@ -11,9 +11,16 @@ const TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 export function SessionTimeout() {
     const router = useRouter();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const lastActivityRef = useRef(Date.now());
 
     useEffect(() => {
         const handleActivity = () => {
+            const now = Date.now();
+            // Throttle: Only update if 1 second has passed since last update
+            if (now - lastActivityRef.current < 1000) return;
+
+            lastActivityRef.current = now;
+
             if (timerRef.current) clearTimeout(timerRef.current);
 
             if (auth.currentUser) {

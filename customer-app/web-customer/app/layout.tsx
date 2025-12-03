@@ -84,7 +84,7 @@ export default function RootLayout({
           {/* <NewsletterPopup /> */}
           <MobileNav />
           <MobileNav />
-          <SessionTimeout />
+          {/* <SessionTimeout /> */}
           <SystemStatus />
         </Providers>
       </body>
