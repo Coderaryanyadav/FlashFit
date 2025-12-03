@@ -59,7 +59,6 @@ export function Header({
 
   // Use provided onLoginClick or default to store
   const handleLoginClick = () => {
-    console.log("Login clicked");
     if (onLoginClick) onLoginClick();
     else openLogin();
   };

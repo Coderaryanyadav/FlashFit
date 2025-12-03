@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { ProductService, Product } from "@/services/productService";
 import { CategoryService, Category } from "@/services/categoryService";
 import { ProductCard } from "@/components/ProductCard";
-import { Header } from "@/components/Header";
 import { LoginModal } from "@/components/LoginModal";
 import { Slider } from "@/components/ui/slider";
 import { ChevronRight, SlidersHorizontal, X, Filter, ArrowUpDown, Star } from "lucide-react";
@@ -113,9 +112,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     return (
         <div className="min-h-screen bg-neutral-950 text-foreground">
             <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-            <Header onLoginClick={() => setShowLoginModal(true)} />
 
-            <div className="container mx-auto px-4 pt-32 pb-8">
+            <div className="container mx-auto px-4 pb-8">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
                     <Link href="/" className="hover:text-primary transition-colors">Home</Link>
