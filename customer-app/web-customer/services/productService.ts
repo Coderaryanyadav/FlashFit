@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, doc, getDoc, limit, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc, limit, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
 export interface Product {
@@ -154,15 +154,34 @@ export const ProductService = {
 
     async getProductsByPincode(pincode: string): Promise<Product[]> {
         try {
+            // 1. Try specific query
             const q = query(
                 collection(db, "products"),
                 where("pincodes", "array-contains", pincode)
             );
             const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as Product));
+
+            if (!snapshot.empty) {
+                return snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as Product));
+            }
+
+            // 2. Fallback: Fetch all (limit 100) and filter in memory
+            // This handles cases where pincode might be a number in DB but string in query
+            console.warn("Direct pincode query returned 0. Trying fallback...");
+            const fallbackQ = query(collection(db, "products"), limit(100));
+            const fallbackSnap = await getDocs(fallbackQ);
+
+            return fallbackSnap.docs
+                .map(doc => ({ id: doc.id, ...doc.data() } as Product))
+                .filter(p => {
+                    if (!p.pincodes) return false;
+                    // Check for string OR number match
+                    return p.pincodes.some((pin: any) => String(pin) === pincode);
+                });
+
         } catch (error) {
             console.error("Error fetching products by pincode:", error);
             return [];
