@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { SystemStatus } from "@/components/SystemStatus";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { Header } from "@/components/Header";
@@ -84,6 +85,7 @@ export default function RootLayout({
           <MobileNav />
           <MobileNav />
           <SessionTimeout />
+          <SystemStatus />
         </Providers>
       </body>
     </html>
