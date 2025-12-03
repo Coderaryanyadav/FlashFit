@@ -29,25 +29,33 @@ function initializeFirebaseAdmin() {
         // Handle multiple private key formats
         let formattedKey = privateKey;
 
-        // Check if it's escaped newlines (\\n)
-        if (privateKey.includes('\\n')) {
-            formattedKey = privateKey.replace(/\\n/g, '\n');
+        // 1. Handle escaped newlines (common in Vercel/Env vars)
+        if (formattedKey.includes('\\n')) {
+            formattedKey = formattedKey.replace(/\\n/g, '\n');
         }
 
-        // Check if it needs to be decoded from base64
+        // 2. Check if it's Base64 encoded (only if it doesn't look like a PEM key yet)
         if (!formattedKey.includes('BEGIN PRIVATE KEY')) {
             try {
-                formattedKey = Buffer.from(privateKey, 'base64').toString('utf-8');
+                const decoded = Buffer.from(formattedKey, 'base64').toString('utf-8');
+                if (decoded.includes('BEGIN PRIVATE KEY')) {
+                    formattedKey = decoded;
+                }
             } catch (e) {
-                // Not base64, continue with current format
+                // Not base64 or failed to decode, keep original
+                console.warn("Failed to decode potential base64 key, using raw value.");
             }
         }
 
-        // Validate the key format
+        // 3. Final Validation
         if (!formattedKey.includes('BEGIN PRIVATE KEY')) {
-            console.error("❌ Private key doesn't appear to be in correct format");
-            console.error("Key preview:", formattedKey.substring(0, 50) + "...");
-            throw new Error("Invalid private key format - must contain BEGIN PRIVATE KEY");
+            // Attempt to wrap it if it's just the body (rare edge case)
+            if (!formattedKey.includes('-----')) {
+                formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey}\n-----END PRIVATE KEY-----`;
+            } else {
+                console.error("❌ Private key missing PEM headers");
+                throw new Error("Invalid private key format - missing BEGIN PRIVATE KEY");
+            }
         }
 
         const credential = admin.credential.cert({
