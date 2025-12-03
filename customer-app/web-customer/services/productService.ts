@@ -116,6 +116,9 @@ export const ProductService = {
                 ...doc.data()
             } as Product));
             callback(products);
+        }, (error) => {
+            console.error("Error subscribing to products:", error);
+            callback([]); // Return empty array on error to stop loading state
         });
     },
 

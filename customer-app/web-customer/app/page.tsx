@@ -57,11 +57,16 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const savedPincode = localStorage.getItem("userPincode");
-    if (savedPincode === SERVICEABLE_PINCODE) {
-      setIsPincodeVerified(true);
-      setPincodeInput(savedPincode);
-    } else {
+    try {
+      const savedPincode = localStorage.getItem("userPincode");
+      if (savedPincode === SERVICEABLE_PINCODE) {
+        setIsPincodeVerified(true);
+        setPincodeInput(savedPincode);
+      } else {
+        setShowPincodeModal(true);
+      }
+    } catch (e) {
+      console.error("Error accessing localStorage:", e);
       setShowPincodeModal(true);
     }
   }, []);
@@ -86,13 +91,19 @@ export default function HomePage() {
   }, []);
 
   const handlePincodeVerify = () => {
-    if (pincodeInput === SERVICEABLE_PINCODE) {
+    const cleanPincode = pincodeInput.trim().replace(/\s/g, "");
+
+    if (cleanPincode === SERVICEABLE_PINCODE) {
       setIsPincodeVerified(true);
       setPincodeError("");
-      localStorage.setItem("userPincode", pincodeInput);
+      try {
+        localStorage.setItem("userPincode", cleanPincode);
+      } catch (e) {
+        console.error("Failed to save pincode:", e);
+      }
       setShowPincodeModal(false);
     } else {
-      setPincodeError(`Sorry, we don't deliver to ${pincodeInput} yet.`);
+      setPincodeError(`Sorry, we don't deliver to ${cleanPincode || "this location"} yet.`);
     }
   };
 
