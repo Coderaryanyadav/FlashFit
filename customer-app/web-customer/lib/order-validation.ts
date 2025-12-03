@@ -1,7 +1,7 @@
 import { ORDER_LIMITS, DELIVERY_ZONES } from '@/config/business-rules';
 import { ValidationError } from '@/lib/errors';
 
-const SERVICEABLE_PINCODES = DELIVERY_ZONES.MUMBAI_GOREGAON.pincodes;
+const SERVICEABLE_PINCODES = DELIVERY_ZONES.MUMBAI_GOREGAON.pincodes as readonly string[];
 const MUMBAI_BOUNDS = DELIVERY_ZONES.MUMBAI_GOREGAON.bounds;
 
 export interface OrderRequest {
@@ -35,7 +35,7 @@ export function validatePincode(pincode: string): void {
     const cleanPincode = pincode.trim();
     if (!SERVICEABLE_PINCODES.includes(cleanPincode)) {
         throw new ValidationError(
-            `Sorry, we don't deliver to pincode ${cleanPincode}. Currently serving: ${SERVICEABLE_PINCODES.join(', ')}`
+            'Sorry, we don\'t deliver to pincode ' + cleanPincode + '. Currently serving: ' + SERVICEABLE_PINCODES.join(', ')
         );
     }
 }
