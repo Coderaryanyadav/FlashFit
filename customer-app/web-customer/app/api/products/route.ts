@@ -1,5 +1,7 @@
+```typescript
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/utils/firebaseAdmin";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +41,7 @@ export async function GET(request: Request) {
             throw raceError; // Re-throw to outer catch
         }
     } catch (error: any) {
-        console.error("API Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return handleApiError(error);
     }
 }
+```

@@ -39,7 +39,8 @@ export function middleware(request: NextRequest) {
 
             // Cleanup old entries
             if (rateLimitMap.size > 10000) {
-                for (const [k, v] of rateLimitMap.entries()) {
+                const entries = Array.from(rateLimitMap.entries());
+                for (const [k, v] of entries) {
                     if (now > v.resetTime) rateLimitMap.delete(k);
                 }
             }

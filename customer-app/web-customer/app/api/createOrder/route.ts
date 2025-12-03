@@ -12,19 +12,12 @@ import { db, auth } from "@/utils/firebase"; // We need admin SDK for transactio
 
 import { getAdminDb, getAdminAuth } from "@/utils/firebaseAdmin";
 import { FieldValue, Transaction } from "firebase-admin/firestore";
+import { ORDER_LIMITS, DELIVERY_ZONES } from "@/config/business-rules";
 
 // Security Configuration
-const SERVICEABLE_PINCODES = ["400059", "400060", "400062", "400063", "400064", "400065", "400066", "400067", "400068", "400069"]; // Mumbai Goregaon area
-const MUMBAI_BOUNDS = {
-    minLat: 18.90,
-    maxLat: 19.30,
-    minLng: 72.75,
-    maxLng: 72.95
-};
-const MAX_ITEMS_PER_ORDER = 50;
-const MAX_QUANTITY_PER_ITEM = 10;
-const MAX_ORDER_AMOUNT = 500000; // 5 lakhs
-const MIN_ORDER_AMOUNT = 100;
+const SERVICEABLE_PINCODES = DELIVERY_ZONES.MUMBAI_GOREGAON.pincodes;
+const MUMBAI_BOUNDS = DELIVERY_ZONES.MUMBAI_GOREGAON.bounds;
+const { MAX_ITEMS_PER_ORDER, MAX_QUANTITY_PER_ITEM, MAX_ORDER_AMOUNT, MIN_ORDER_AMOUNT } = ORDER_LIMITS;
 
 export async function POST(request: Request) {
     try {
@@ -90,8 +83,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid location coordinates" }, { status: 400 });
         }
         const { lat, lng } = address.location;
-        if (lat < MUMBAI_BOUNDS.minLat || lat > MUMBAI_BOUNDS.maxLat ||
-            lng < MUMBAI_BOUNDS.minLng || lng > MUMBAI_BOUNDS.maxLng) {
+        if (lat < MUMBAI_BOUNDS.lat.min || lat > MUMBAI_BOUNDS.lat.max ||
+            lng < MUMBAI_BOUNDS.lng.min || lng > MUMBAI_BOUNDS.lng.max) {
             return NextResponse.json({
                 error: "Delivery location is outside our service area (Mumbai region only)"
             }, { status: 400 });
