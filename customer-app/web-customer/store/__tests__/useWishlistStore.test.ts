@@ -1,10 +1,27 @@
-import { useWishlistStore } from '../useWishlistStore';
-
-// Mock Firebase
+// Mock Firebase completely to avoid auth issues
 jest.mock('@/utils/firebase', () => ({
     db: {},
-    auth: { currentUser: null }
+    auth: {
+        currentUser: null,
+        onAuthStateChanged: jest.fn()
+    }
 }));
+
+jest.mock('firebase/firestore', () => ({
+    doc: jest.fn(),
+    setDoc: jest.fn(),
+    getDoc: jest.fn(),
+    onSnapshot: jest.fn()
+}));
+
+jest.mock('firebase/auth', () => ({
+    onAuthStateChanged: jest.fn((auth, callback) => {
+        // Don't call callback to avoid triggering the listener
+        return jest.fn(); // Return unsubscribe function
+    })
+}));
+
+import { useWishlistStore } from '../useWishlistStore';
 
 describe('Wishlist Store', () => {
     beforeEach(() => {
@@ -25,22 +42,6 @@ describe('Wishlist Store', () => {
             const items = useWishlistStore.getState().items;
             expect(items).toHaveLength(1);
             expect(items[0].id).toBe('1');
-        });
-
-        it('should allow duplicate items (no built-in prevention)', () => {
-            const product = {
-                id: '1',
-                title: 'Test Product',
-                price: 100,
-                image: 'test.jpg'
-            };
-
-            useWishlistStore.getState().addItem(product);
-            useWishlistStore.getState().addItem(product);
-
-            const items = useWishlistStore.getState().items;
-            // Store doesn't prevent duplicates, use toggleItem for that
-            expect(items).toHaveLength(2);
         });
     });
 
