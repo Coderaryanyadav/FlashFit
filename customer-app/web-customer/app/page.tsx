@@ -56,19 +56,10 @@ export default function HomePage() {
     fetchData();
   }, []);
 
+  // Set verified to true by default to bypass modal
   useEffect(() => {
-    try {
-      const savedPincode = localStorage.getItem("userPincode");
-      if (savedPincode === SERVICEABLE_PINCODE) {
-        setIsPincodeVerified(true);
-        setPincodeInput(savedPincode);
-      } else {
-        setShowPincodeModal(true);
-      }
-    } catch (e) {
-      console.error("Error accessing localStorage:", e);
-      setShowPincodeModal(true);
-    }
+    setIsPincodeVerified(true);
+    setPincodeInput(SERVICEABLE_PINCODE);
   }, []);
 
   useEffect(() => {
@@ -108,23 +99,6 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handlePincodeVerify = () => {
-    const cleanPincode = pincodeInput.trim().replace(/\s/g, "");
-
-    if (cleanPincode === SERVICEABLE_PINCODE) {
-      setIsPincodeVerified(true);
-      setPincodeError("");
-      try {
-        localStorage.setItem("userPincode", cleanPincode);
-      } catch (e) {
-        console.error("Failed to save pincode:", e);
-      }
-      setShowPincodeModal(false);
-    } else {
-      setPincodeError(`Sorry, we don't deliver to ${cleanPincode || "this location"} yet.`);
-    }
-  };
-
   const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -136,53 +110,7 @@ export default function HomePage() {
         onClose={() => setShowLoginModal(false)}
       />
 
-      {/* Pincode Modal */}
-      <Dialog open={showPincodeModal} onOpenChange={setShowPincodeModal}>
-        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-              <MapPin className="h-5 w-5 text-white" />
-              Location Check
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <p className="text-gray-400">
-              Enter your pincode to unlock exclusive drops in your area.
-            </p>
-            <div className="relative">
-              <Input
-                placeholder="Enter pincode (e.g., 400059)"
-                className="h-12 text-lg pr-24 bg-black border-zinc-700 focus:border-white text-white placeholder:text-zinc-600"
-                value={pincodeInput}
-                onChange={(e) => {
-                  setPincodeInput(e.target.value);
-                  setPincodeError("");
-                }}
-                onKeyPress={(e) => e.key === 'Enter' && handlePincodeVerify()}
-                maxLength={6}
-              />
-              <Button
-                className="absolute right-1 top-1 h-10 bg-white hover:bg-gray-200 text-black font-bold"
-                onClick={handlePincodeVerify}
-                disabled={pincodeInput.length !== 6}
-              >
-                Check
-              </Button>
-            </div>
-
-            {pincodeError && (
-              <div className="p-3 bg-red-900/20 border border-red-900/50 rounded-lg">
-                <p className="text-sm text-red-400">{pincodeError}</p>
-              </div>
-            )}
-
-            <div className="p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg">
-              <p className="text-xs text-gray-400 font-medium mb-1">Live in:</p>
-              <p className="text-sm font-bold text-white">{SERVICEABLE_PINCODE} - Goregaon, Mumbai</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Pincode Modal REMOVED */}
 
       <div>
         <Marquee text="FLASH SALE • 60 MIN DELIVERY • FREE RETURNS • NEW DROPS DAILY •" />
