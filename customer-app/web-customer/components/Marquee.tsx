@@ -1,25 +1,22 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 export function Marquee({ text }: { text: string }) {
     return (
-        <div className="bg-primary text-black py-2 overflow-hidden whitespace-nowrap border-y border-black">
-            <motion.div
-                className="inline-block"
-                animate={{ x: [0, -1000] }}
-                transition={{
-                    repeat: Infinity,
-                    ease: "linear",
-                    duration: 20,
-                }}
-            >
-                {[...Array(10)].map((_, i) => (
+        <div className="bg-primary text-black py-2 overflow-hidden whitespace-nowrap border-y border-black relative flex">
+            <div className="animate-marquee whitespace-nowrap flex">
+                {[...Array(20)].map((_, i) => (
                     <span key={i} className="text-sm font-black uppercase tracking-widest mx-8">
                         {text}
                     </span>
                 ))}
-            </motion.div>
+            </div>
+            <div className="animate-marquee whitespace-nowrap flex absolute top-2 left-0">
+                {[...Array(20)].map((_, i) => (
+                    <span key={i + 20} className="text-sm font-black uppercase tracking-widest mx-8">
+                        {text}
+                    </span>
+                ))}
+            </div>
         </div>
     );
 }

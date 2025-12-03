@@ -205,9 +205,9 @@ export default function HomePage() {
         </section>
 
         {/* Stack Categories */}
-        <section className="py-24 bg-black">
+        <section className="py-12 bg-black">
           <div className="container mx-auto px-4">
-            <div className="flex items-end justify-between mb-12">
+            <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-4xl font-black tracking-tight mb-2">THE COLLECTION</h2>
                 <p className="text-gray-400 text-lg">Essentials for every vibe.</p>
@@ -250,7 +250,7 @@ export default function HomePage() {
         </section>
 
         {/* Selling Fast (Low Stock) */}
-        <main className="container mx-auto px-4 py-24 border-t border-white/10">
+        <main className="container mx-auto px-4 py-12 border-t border-white/10">
           <div className="flex items-center justify-between mb-12">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 bg-white text-black rounded-full flex items-center justify-center animate-pulse">
