@@ -9,7 +9,7 @@ export async function executeOrderTransaction(
     orderData: OrderRequest,
     userId: string
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         const timeoutId = setTimeout(() => {
             reject(new Error('Transaction timeout - order creation took too long'));
         }, TRANSACTION_TIMEOUT);
@@ -97,11 +97,13 @@ export async function executeOrderTransaction(
                 }
 
                 clearTimeout(timeoutId);
-                resolve(orderRef.id);
+                return orderRef.id;
             } catch (error) {
                 clearTimeout(timeoutId);
                 throw error;
             }
-        }).then(resolve).catch(reject);
+        })
+            .then(orderId => resolve(orderId))
+            .catch(error => reject(error));
     });
 }
