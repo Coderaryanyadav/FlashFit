@@ -48,11 +48,19 @@ export default function HomePage() {
         setPincodeInput(SERVICEABLE_PINCODE);
 
         // Fetch everything in parallel
-        const [cats, trends, pincodeProducts] = await Promise.all([
+        const [cats, trends, apiProductsRes] = await Promise.all([
           CategoryService.getCategories(),
           ProductService.getTrendingProducts(SERVICEABLE_PINCODE),
-          ProductService.getProductsByPincode(SERVICEABLE_PINCODE)
+          fetch(`/api/products?pincode=${SERVICEABLE_PINCODE}`)
         ]);
+
+        let pincodeProducts = [];
+        if (apiProductsRes.ok) {
+          pincodeProducts = await apiProductsRes.json();
+        } else {
+          console.error("API Fetch failed, falling back to SDK");
+          pincodeProducts = await ProductService.getProductsByPincode(SERVICEABLE_PINCODE);
+        }
 
         setCategories(cats);
         setTrendingProducts(trends);
