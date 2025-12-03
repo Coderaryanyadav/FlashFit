@@ -47,27 +47,37 @@ export default function HomePage() {
         setIsPincodeVerified(true);
         setPincodeInput(SERVICEABLE_PINCODE);
 
-        // Fetch everything in parallel
-        const [cats, trends, apiProductsRes] = await Promise.all([
-          CategoryService.getCategories(),
+        // Fetch everything in parallel (Server-Side Proxy)
+        const [catsRes, trends, apiProductsRes] = await Promise.all([
+          fetch('/api/categories'),
           ProductService.getTrendingProducts(SERVICEABLE_PINCODE),
           fetch(`/api/products?pincode=${SERVICEABLE_PINCODE}`)
         ]);
 
+        // Handle Categories
+        let catsData = [];
+        if (catsRes.ok) {
+          catsData = await catsRes.json();
+        } else {
+          console.error("Categories API failed, fallback to SDK");
+          catsData = await CategoryService.getCategories();
+        }
+
+        // Handle Products
         let pincodeProducts = [];
         if (apiProductsRes.ok) {
           pincodeProducts = await apiProductsRes.json();
         } else {
-          console.error("API Fetch failed, falling back to SDK");
+          console.error("Products API failed, fallback to SDK");
           pincodeProducts = await ProductService.getProductsByPincode(SERVICEABLE_PINCODE);
         }
 
-        setCategories(cats);
+        setCategories(catsData);
         setTrendingProducts(trends);
         setProducts(pincodeProducts);
 
         console.log("Data loaded:", {
-          categories: cats.length,
+          categories: catsData.length,
           trending: trends.length,
           products: pincodeProducts.length
         });
