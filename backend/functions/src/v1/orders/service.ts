@@ -22,10 +22,20 @@ export class OrderService {
 
     // Transaction to handle inventory and order creation
     await db.runTransaction(async (t) => {
-      // 1. Check and decrement stock
-      for (const item of items) {
-        const productRef = db.collection("products").doc(item.productId);
-        const productDoc = await t.get(productRef);
+      // 1. READS: Fetch all necessary data first
+      const productRefs = items.map((item: any) => db.collection("products").doc(item.productId));
+      const productDocs = await t.getAll(...productRefs);
+
+      let storeDoc: FirebaseFirestore.DocumentSnapshot | null = null;
+      if (storeId) {
+        storeDoc = await t.get(db.collection("users").doc(storeId));
+      }
+
+      // 2. LOGIC & VALIDATION
+      const productUpdates: { ref: FirebaseFirestore.DocumentReference; data: any }[] = [];
+
+      items.forEach((item: any, index: number) => {
+        const productDoc = productDocs[index];
 
         if (!productDoc.exists) {
           throw new functions.https.HttpsError("not-found", `Product ${item.productId} not found`);
@@ -49,16 +59,23 @@ export class OrderService {
               `Insufficient stock for ${productData.title} size ${item.size}`
             );
           }
-          t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
+          // Prepare update
+          productUpdates.push({
+            ref: productDoc.ref,
+            data: { [`stock.${item.size}`]: currentStock - item.quantity }
+          });
         } else {
           // Global stock (number)
           const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
           if (currentStock < item.quantity) {
             throw new functions.https.HttpsError("failed-precondition", `Insufficient stock for ${productData?.title}`);
           }
-          // Only update if it's a number to avoid overwriting map with number (safety check)
+          // Only update if it's a number
           if (typeof productData?.stock === "number") {
-            t.update(productRef, { stock: currentStock - item.quantity });
+            productUpdates.push({
+              ref: productDoc.ref,
+              data: { stock: currentStock - item.quantity }
+            });
           }
         }
 
@@ -69,25 +86,29 @@ export class OrderService {
         else if (productData?.category === "shaadi_closet") itemDeliveryDays = 4;
 
         if (itemDeliveryDays > maxDeliveryDays) maxDeliveryDays = itemDeliveryDays;
-      }
+      });
 
       const expectedDeliveryDate = new Date();
       expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
 
-      // Fetch store details
+      // Fetch store details from pre-fetched doc
       let storeName = "FlashFit Store";
       let pickupAddress = "Goregaon, Mumbai";
 
-      if (storeId) {
-        const storeDoc = await t.get(db.collection("users").doc(storeId));
-        if (storeDoc.exists) {
-          const storeData = storeDoc.data();
-          storeName = storeData?.storeName || storeData?.displayName || storeName;
-          pickupAddress = storeData?.storeAddress || pickupAddress;
-        }
+      if (storeDoc && storeDoc.exists) {
+        const storeData = storeDoc.data();
+        storeName = storeData?.storeName || storeData?.displayName || storeName;
+        pickupAddress = storeData?.storeAddress || pickupAddress;
       }
 
-      // 2. Create Order
+      // 3. WRITES: Perform all updates and sets
+
+      // Update products
+      for (const update of productUpdates) {
+        t.update(update.ref, update.data);
+      }
+
+      // Create Order
       const orderData = {
         id: orderRef.id,
         userId,
@@ -112,7 +133,7 @@ export class OrderService {
 
       t.set(orderRef, orderData);
 
-      // 3. Add initial log to subcollection
+      // Add initial log to subcollection
       const logRef = orderRef.collection("logs").doc();
       t.set(logRef, {
         status: "placed",
@@ -166,6 +187,17 @@ export class OrderService {
         return deliveredItemIds.includes(itemId);
       });
 
+      // PRE-FETCH returned products
+      const returnedProductRefs = returnedItems.map((item: any) => {
+        const productId = item.productId || item.id;
+        return productId ? db.collection("products").doc(productId) : null;
+      }).filter((ref: any) => ref !== null);
+
+      let returnedProductDocs: FirebaseFirestore.DocumentSnapshot[] = [];
+      if (returnedProductRefs.length > 0) {
+        returnedProductDocs = await t.getAll(...returnedProductRefs);
+      }
+
       // Recalculate Total Amount based on delivered items
       const surgeMultiplier = orderData?.surgeMultiplier || 1;
       const newTotalBase = deliveredItems.reduce(
@@ -175,26 +207,34 @@ export class OrderService {
       const newFinalAmount = newTotalBase * surgeMultiplier;
 
 
-      // Handle returns (increment stock)
-      for (const item of returnedItems) {
+      // Prepare product updates
+      const productUpdates: { ref: FirebaseFirestore.DocumentReference; data: any }[] = [];
+
+      returnedItems.forEach((item: any) => {
         const productId = item.productId || item.id;
         if (productId) {
-          const productRef = db.collection("products").doc(productId);
-          const productDoc = await t.get(productRef);
-          if (productDoc.exists) {
+          // Find the doc
+          const productDoc = returnedProductDocs.find(d => d.id === productId);
+          if (productDoc && productDoc.exists) {
             const productData = productDoc.data();
             if (item.size && productData?.stock && typeof productData.stock === "object") {
               const currentStock = productData.stock[item.size] || 0;
-              t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
+              productUpdates.push({
+                ref: productDoc.ref,
+                data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) }
+              });
             } else {
               const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
               if (typeof productData?.stock === "number") {
-                t.update(productRef, { stock: currentStock + (item.quantity || 1) });
+                productUpdates.push({
+                  ref: productDoc.ref,
+                  data: { stock: currentStock + (item.quantity || 1) }
+                });
               }
             }
           }
         }
-      }
+      });
 
       const allReturned = deliveredItemIds.length === 0;
       const newStatus = allReturned ? "returning" : "delivered";
@@ -207,6 +247,13 @@ export class OrderService {
       const newPaymentStatus = allReturned ? "cancelled" : (
         orderData?.paymentMethod === "COD" ? "paid" : currentPaymentStatus
       );
+
+      // WRITES START HERE
+
+      // Update products
+      for (const update of productUpdates) {
+        t.update(update.ref, update.data);
+      }
 
       // Credit Driver Earnings (Flat fee for MVP)
       const DELIVERY_FEE = 50;
@@ -253,19 +300,15 @@ export class OrderService {
 
       const orderData = orderDoc.data();
 
-      // Security Check: Ensure caller is the assigned driver
-      // (or we could check for admin role here too if we had user role context)
-      // For now, if the caller matches the driverId, allow.
-      // If not, we might block, BUT admins also use this.
-      // Since we don't have easy admin check inside Service without fetching User doc,
-      // we will allow if driverId matches OR if we assume admin calls are handled upstream or we fetch user.
-      // Let's fetch the caller's profile to check role if not driver.
-
+      // Security Check: Ensure caller is the assigned driver or admin
+      let isAdmin = false;
       if (orderData?.driverId !== callerId) {
         const userRef = db.collection("users").doc(callerId);
         const userDoc = await t.get(userRef);
         const userData = userDoc.data();
-        if (userData?.role !== "admin") {
+        if (userData?.role === "admin") {
+          isAdmin = true;
+        } else {
           throw new functions.https.HttpsError(
             "permission-denied",
             "You are not authorized to update this order"
@@ -273,6 +316,50 @@ export class OrderService {
         }
       }
 
+      // Determine if we need to restore stock (Read Phase)
+      const shouldRestoreStock = status === "cancelled" && orderData?.status !== "cancelled" && orderData?.status !== "returned";
+      const items = orderData?.items || [];
+      const productUpdates: { ref: FirebaseFirestore.DocumentReference; data: any }[] = [];
+
+      if (shouldRestoreStock) {
+        const productRefs = items.map((item: any) => {
+          const productId = item.productId || item.id;
+          return productId ? db.collection("products").doc(productId) : null;
+        }).filter((ref: any) => ref !== null);
+
+        if (productRefs.length > 0) {
+          const productDocs = await t.getAll(...productRefs);
+
+          items.forEach((item: any) => {
+            const productId = item.productId || item.id;
+            if (productId) {
+              const productDoc = productDocs.find(d => d.id === productId);
+              if (productDoc && productDoc.exists) {
+                const productData = productDoc.data() as any;
+                if (item.size && productData?.stock && typeof productData.stock === "object") {
+                  const currentStock = productData.stock[item.size] || 0;
+                  productUpdates.push({
+                    ref: productDoc.ref as FirebaseFirestore.DocumentReference,
+                    data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) }
+                  });
+                } else {
+                  const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
+                  if (typeof productData?.stock === "number") {
+                    productUpdates.push({
+                      ref: productDoc.ref as FirebaseFirestore.DocumentReference,
+                      data: { stock: currentStock + (item.quantity || 1) }
+                    });
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
+
+      // WRITES START HERE
+
+      // 1. Update Order
       t.update(orderRef, {
         status,
         updatedAt: FieldValue.serverTimestamp(),
@@ -287,28 +374,9 @@ export class OrderService {
         },
       });
 
-      // Handle stock restoration if cancelled
-      if (status === "cancelled" && orderData?.status !== "cancelled" && orderData?.status !== "returned") {
-        const items = orderData?.items || [];
-        for (const item of items) {
-          const productId = item.productId || item.id;
-          if (productId) {
-            const productRef = db.collection("products").doc(productId);
-            const productDoc = await t.get(productRef);
-            if (productDoc.exists) {
-              const productData = productDoc.data();
-              if (item.size && productData?.stock && typeof productData.stock === "object") {
-                const currentStock = productData.stock[item.size] || 0;
-                t.update(productRef, { [`stock.${item.size}`]: currentStock + (item.quantity || 1) });
-              } else {
-                const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
-                if (typeof productData?.stock === "number") {
-                  t.update(productRef, { stock: currentStock + (item.quantity || 1) });
-                }
-              }
-            }
-          }
-        }
+      // 2. Restore Stock if needed
+      for (const update of productUpdates) {
+        t.update(update.ref, update.data);
       }
     });
 

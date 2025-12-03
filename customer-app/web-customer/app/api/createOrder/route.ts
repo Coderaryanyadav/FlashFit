@@ -121,17 +121,30 @@ export async function POST(request: Request) {
         // Transaction
         await adminDb.runTransaction(async (t: Transaction) => {
             let calculatedTotal = 0;
+            const productUpdates: { ref: any; data: any }[] = [];
+            let maxDeliveryDays = 2;
 
-            // 1. Check and decrement stock
-            for (const item of items) {
-                const productRef = adminDb.collection("products").doc(item.productId);
-                const productDoc = await t.get(productRef) as any; // Cast to any to avoid TS issues with admin SDK types
+            // 1. READS: Fetch all products first
+            const productRefs = items.map((item: any) => adminDb.collection("products").doc(item.productId));
+            const productDocs = await t.getAll(...productRefs);
+
+            // Fetch Driver Doc if nearestDriver is found (Read Phase)
+            let driverDoc: any = null;
+            let driverRef: any = null;
+            if (nearestDriver) {
+                driverRef = adminDb.collection("drivers").doc(nearestDriver.id);
+                driverDoc = await t.get(driverRef);
+            }
+
+            // 2. LOGIC & VALIDATION
+            items.forEach((item: any, index: number) => {
+                const productDoc = productDocs[index];
 
                 if (!productDoc.exists) {
                     throw new Error(`Product ${item.productId} not found`);
                 }
 
-                const productData = productDoc.data();
+                const productData = productDoc.data() as any;
 
                 // Server-side price validation
                 calculatedTotal += (productData.price || 0) * item.quantity;
@@ -146,7 +159,10 @@ export async function POST(request: Request) {
                     if (currentStock < item.quantity) {
                         throw new Error(`Insufficient stock for ${productData.title} size ${item.size}`);
                     }
-                    t.update(productRef, { [`stock.${item.size}`]: currentStock - item.quantity });
+                    productUpdates.push({
+                        ref: productDoc.ref,
+                        data: { [`stock.${item.size}`]: currentStock - item.quantity }
+                    });
                 } else {
                     // Global stock (number)
                     const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
@@ -154,7 +170,10 @@ export async function POST(request: Request) {
                         throw new Error(`Insufficient stock for ${productData?.title}`);
                     }
                     if (typeof productData?.stock === "number") {
-                        t.update(productRef, { stock: currentStock - item.quantity });
+                        productUpdates.push({
+                            ref: productDoc.ref,
+                            data: { stock: currentStock - item.quantity }
+                        });
                     }
                 }
 
@@ -165,7 +184,7 @@ export async function POST(request: Request) {
                 else if (productData?.category === "shaadi_closet") itemDeliveryDays = 4;
 
                 if (itemDeliveryDays > maxDeliveryDays) maxDeliveryDays = itemDeliveryDays;
-            }
+            });
 
             const expectedDeliveryDate = new Date();
             expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
@@ -176,7 +195,7 @@ export async function POST(request: Request) {
             // Initialize tracking logs array
             const trackingLogs: any[] = [];
 
-            // 2. Create Order
+            // Prepare Order Data
             const orderData: any = {
                 id: orderRef.id,
                 userId,
@@ -199,33 +218,20 @@ export async function POST(request: Request) {
                 },
             };
 
-            // 3. Assign Driver (if found)
-            if (nearestDriver) {
-                // Check if driver is still available (optimistic)
-                // In a real robust system, we'd read the driver doc inside transaction.
-                const driverRef = adminDb.collection("drivers").doc(nearestDriver.id);
-                const driverDoc = await t.get(driverRef) as any;
-
-                if (driverDoc.exists && driverDoc.data()?.currentOrderId === null) {
-                    orderData.driverId = nearestDriver.id;
-                    orderData.status = "assigned";
-                    orderData.assignedAt = FieldValue.serverTimestamp();
-                    orderData.tracking.status = "assigned";
-                    trackingLogs.push({
-                        status: "assigned",
-                        timestamp: new Date(),
-                        driverId: nearestDriver.id,
-                        description: "Order placed and driver assigned"
-                    });
-
-                    t.update(driverRef, { currentOrderId: orderRef.id });
-                } else {
-                    trackingLogs.push({
-                        status: "placed",
-                        timestamp: new Date(),
-                        description: "Order placed successfully"
-                    });
-                }
+            // Check Driver Assignment (Logic Phase)
+            let assignedDriverId = null;
+            if (driverDoc && driverDoc.exists && driverDoc.data()?.currentOrderId === null) {
+                assignedDriverId = nearestDriver.id;
+                orderData.driverId = assignedDriverId;
+                orderData.status = "assigned";
+                orderData.assignedAt = FieldValue.serverTimestamp();
+                orderData.tracking.status = "assigned";
+                trackingLogs.push({
+                    status: "assigned",
+                    timestamp: new Date(),
+                    driverId: assignedDriverId,
+                    description: "Order placed and driver assigned"
+                });
             } else {
                 trackingLogs.push({
                     status: "placed",
@@ -237,7 +243,19 @@ export async function POST(request: Request) {
             // Update tracking logs in order data
             orderData.tracking.logs = trackingLogs;
 
-            // Write order (single write operation)
+            // 3. WRITES: Perform all updates and sets
+
+            // Update products
+            for (const update of productUpdates) {
+                t.update(update.ref, update.data);
+            }
+
+            // Update driver if assigned
+            if (assignedDriverId && driverRef) {
+                t.update(driverRef, { currentOrderId: orderRef.id });
+            }
+
+            // Create order
             t.set(orderRef, orderData);
         });
 

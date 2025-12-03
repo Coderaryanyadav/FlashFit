@@ -7,66 +7,81 @@ export const autoAssignDriver = functions.firestore
   .document("orders/{orderId}")
   .onUpdate(async (change, context) => {
     const after = change.after.data();
+    const before = change.before.data();
+
+    // Prevent infinite loops
+    if (after.driverSearchFailed && after.status === "pending") {
+      // Already tried and failed, don't retry immediately or loop
+      return null;
+    }
 
     const shouldAssign = (
       (after.status === "pending" && !after.driverId) &&
-            (after.paymentStatus === "pending" || after.paymentStatus === "paid")
+      (after.paymentStatus === "pending" || after.paymentStatus === "paid")
     );
 
     if (shouldAssign) {
-      const driversSnap = await db.collection("drivers")
-        .where("isOnline", "==", true)
-        .where("currentOrderId", "==", null)
-        .get();
-
-      let nearestDriver: any = null;
-      let minDistance = Infinity;
-
       const storeLat = after.storeLocation?.lat || 28.6139;
       const storeLng = after.storeLocation?.lng || 77.2090;
 
-      driversSnap.docs.forEach((doc) => {
-        const driver = doc.data();
-        if (driver.location) {
-          const dist = calculateDistance(storeLat, storeLng, driver.location.lat, driver.location.lng);
-          if (dist < minDistance) {
-            minDistance = dist;
-            nearestDriver = doc;
+      await db.runTransaction(async (t) => {
+        // 1. Find available drivers
+        const driversSnap = await t.get(
+          db.collection("drivers")
+            .where("isOnline", "==", true)
+            .where("currentOrderId", "==", null)
+        );
+
+        let nearestDriver: any = null;
+        let minDistance = Infinity;
+
+        driversSnap.docs.forEach((doc) => {
+          const driver = doc.data();
+          if (driver.location) {
+            const dist = calculateDistance(storeLat, storeLng, driver.location.lat, driver.location.lng);
+            if (dist < minDistance) {
+              minDistance = dist;
+              nearestDriver = doc;
+            }
           }
+        });
+
+        if (nearestDriver) {
+          // 2. Assign driver (Atomic update)
+          t.update(change.after.ref, {
+            driverId: nearestDriver.id,
+            status: "assigned",
+            assignedAt: FieldValue.serverTimestamp(),
+            tracking: {
+              status: "assigned",
+              logs: FieldValue.arrayUnion({
+                status: "assigned",
+                timestamp: new Date(),
+                driverId: nearestDriver.id
+              }),
+            },
+          });
+
+          t.update(nearestDriver.ref, {
+            currentOrderId: context.params.orderId,
+          });
+
+          // Note: We can't log to console inside transaction easily, but it's fine.
+        } else {
+          // 3. Mark as failed (Atomic update)
+          t.update(change.after.ref, {
+            // Keep status pending so admin can see it, but mark failed to stop loop
+            driverSearchFailed: true,
+            tracking: {
+              status: "searching_driver",
+              logs: FieldValue.arrayUnion({
+                status: "no_driver_available",
+                timestamp: new Date()
+              }),
+            },
+          });
         }
       });
-
-      if (nearestDriver) {
-        await change.after.ref.update({
-          driverId: nearestDriver.id,
-          status: "assigned",
-          assignedAt: FieldValue.serverTimestamp(),
-          tracking: {
-            status: "assigned",
-            logs: [
-              ...(after.tracking?.logs || []),
-              { status: "assigned", timestamp: new Date(), driverId: nearestDriver.id },
-            ],
-          },
-        });
-        await db.collection("drivers").doc(nearestDriver.id).update({
-          currentOrderId: context.params.orderId,
-        });
-        console.log(`Assigned driver ${nearestDriver.id} to order ${context.params.orderId}`);
-      } else {
-        console.log("No drivers available");
-        await change.after.ref.update({
-          status: "pending",
-          driverSearchFailed: true,
-          tracking: {
-            status: "searching_driver",
-            logs: [
-              ...(after.tracking?.logs || []),
-              { status: "no_driver_available", timestamp: new Date() },
-            ],
-          },
-        });
-      }
     }
     return null;
   });

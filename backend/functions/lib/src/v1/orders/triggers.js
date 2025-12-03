@@ -31,61 +31,71 @@ const firestore_1 = require("firebase-admin/firestore");
 exports.autoAssignDriver = functions.firestore
     .document("orders/{orderId}")
     .onUpdate(async (change, context) => {
-    var _a, _b, _c, _d;
+    var _a, _b;
     const after = change.after.data();
+    const before = change.before.data();
+    // Prevent infinite loops
+    if (after.driverSearchFailed && after.status === "pending") {
+        // Already tried and failed, don't retry immediately or loop
+        return null;
+    }
     const shouldAssign = ((after.status === "pending" && !after.driverId) &&
         (after.paymentStatus === "pending" || after.paymentStatus === "paid"));
     if (shouldAssign) {
-        const driversSnap = await db_1.db.collection("drivers")
-            .where("isOnline", "==", true)
-            .where("currentOrderId", "==", null)
-            .get();
-        let nearestDriver = null;
-        let minDistance = Infinity;
         const storeLat = ((_a = after.storeLocation) === null || _a === void 0 ? void 0 : _a.lat) || 28.6139;
         const storeLng = ((_b = after.storeLocation) === null || _b === void 0 ? void 0 : _b.lng) || 77.2090;
-        driversSnap.docs.forEach((doc) => {
-            const driver = doc.data();
-            if (driver.location) {
-                const dist = (0, utils_1.calculateDistance)(storeLat, storeLng, driver.location.lat, driver.location.lng);
-                if (dist < minDistance) {
-                    minDistance = dist;
-                    nearestDriver = doc;
+        await db_1.db.runTransaction(async (t) => {
+            // 1. Find available drivers
+            const driversSnap = await t.get(db_1.db.collection("drivers")
+                .where("isOnline", "==", true)
+                .where("currentOrderId", "==", null));
+            let nearestDriver = null;
+            let minDistance = Infinity;
+            driversSnap.docs.forEach((doc) => {
+                const driver = doc.data();
+                if (driver.location) {
+                    const dist = (0, utils_1.calculateDistance)(storeLat, storeLng, driver.location.lat, driver.location.lng);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        nearestDriver = doc;
+                    }
                 }
+            });
+            if (nearestDriver) {
+                // 2. Assign driver (Atomic update)
+                t.update(change.after.ref, {
+                    driverId: nearestDriver.id,
+                    status: "assigned",
+                    assignedAt: firestore_1.FieldValue.serverTimestamp(),
+                    tracking: {
+                        status: "assigned",
+                        logs: firestore_1.FieldValue.arrayUnion({
+                            status: "assigned",
+                            timestamp: new Date(),
+                            driverId: nearestDriver.id
+                        }),
+                    },
+                });
+                t.update(nearestDriver.ref, {
+                    currentOrderId: context.params.orderId,
+                });
+                // Note: We can't log to console inside transaction easily, but it's fine.
+            }
+            else {
+                // 3. Mark as failed (Atomic update)
+                t.update(change.after.ref, {
+                    // Keep status pending so admin can see it, but mark failed to stop loop
+                    driverSearchFailed: true,
+                    tracking: {
+                        status: "searching_driver",
+                        logs: firestore_1.FieldValue.arrayUnion({
+                            status: "no_driver_available",
+                            timestamp: new Date()
+                        }),
+                    },
+                });
             }
         });
-        if (nearestDriver) {
-            await change.after.ref.update({
-                driverId: nearestDriver.id,
-                status: "assigned",
-                assignedAt: firestore_1.FieldValue.serverTimestamp(),
-                tracking: {
-                    status: "assigned",
-                    logs: [
-                        ...(((_c = after.tracking) === null || _c === void 0 ? void 0 : _c.logs) || []),
-                        { status: "assigned", timestamp: new Date(), driverId: nearestDriver.id },
-                    ],
-                },
-            });
-            await db_1.db.collection("drivers").doc(nearestDriver.id).update({
-                currentOrderId: context.params.orderId,
-            });
-            console.log(`Assigned driver ${nearestDriver.id} to order ${context.params.orderId}`);
-        }
-        else {
-            console.log("No drivers available");
-            await change.after.ref.update({
-                status: "pending",
-                driverSearchFailed: true,
-                tracking: {
-                    status: "searching_driver",
-                    logs: [
-                        ...(((_d = after.tracking) === null || _d === void 0 ? void 0 : _d.logs) || []),
-                        { status: "no_driver_available", timestamp: new Date() },
-                    ],
-                },
-            });
-        }
     }
     return null;
 });
