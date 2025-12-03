@@ -79,7 +79,9 @@ export default function RootLayout({
           </main>
           <Footer />
           <BackToTop />
-          <NewsletterPopup />
+          <BackToTop />
+          {/* <NewsletterPopup /> */}
+          <MobileNav />
           <MobileNav />
           <SessionTimeout />
         </Providers>
