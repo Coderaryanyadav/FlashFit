@@ -62,7 +62,7 @@ export class OrderService {
           // Prepare update
           productUpdates.push({
             ref: productDoc.ref,
-            data: { [`stock.${item.size}`]: currentStock - item.quantity }
+            data: { [`stock.${item.size}`]: currentStock - item.quantity },
           });
         } else {
           // Global stock (number)
@@ -74,7 +74,7 @@ export class OrderService {
           if (typeof productData?.stock === "number") {
             productUpdates.push({
               ref: productDoc.ref,
-              data: { stock: currentStock - item.quantity }
+              data: { stock: currentStock - item.quantity },
             });
           }
         }
@@ -214,21 +214,21 @@ export class OrderService {
         const productId = item.productId || item.id;
         if (productId) {
           // Find the doc
-          const productDoc = returnedProductDocs.find(d => d.id === productId);
+          const productDoc = returnedProductDocs.find((d) => d.id === productId);
           if (productDoc && productDoc.exists) {
             const productData = productDoc.data();
             if (item.size && productData?.stock && typeof productData.stock === "object") {
               const currentStock = productData.stock[item.size] || 0;
               productUpdates.push({
                 ref: productDoc.ref,
-                data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) }
+                data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) },
               });
             } else {
               const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
               if (typeof productData?.stock === "number") {
                 productUpdates.push({
                   ref: productDoc.ref,
-                  data: { stock: currentStock + (item.quantity || 1) }
+                  data: { stock: currentStock + (item.quantity || 1) },
                 });
               }
             }
@@ -317,7 +317,10 @@ export class OrderService {
       }
 
       // Determine if we need to restore stock (Read Phase)
-      const shouldRestoreStock = status === "cancelled" && orderData?.status !== "cancelled" && orderData?.status !== "returned";
+      const shouldRestoreStock =
+        status === "cancelled" &&
+        orderData?.status !== "cancelled" &&
+        orderData?.status !== "returned";
       const items = orderData?.items || [];
       const productUpdates: { ref: FirebaseFirestore.DocumentReference; data: any }[] = [];
 
@@ -333,21 +336,21 @@ export class OrderService {
           items.forEach((item: any) => {
             const productId = item.productId || item.id;
             if (productId) {
-              const productDoc = productDocs.find(d => d.id === productId);
+              const productDoc = productDocs.find((d) => d.id === productId);
               if (productDoc && productDoc.exists) {
                 const productData = productDoc.data() as any;
                 if (item.size && productData?.stock && typeof productData.stock === "object") {
                   const currentStock = productData.stock[item.size] || 0;
                   productUpdates.push({
                     ref: productDoc.ref as FirebaseFirestore.DocumentReference,
-                    data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) }
+                    data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) },
                   });
                 } else {
                   const currentStock = typeof productData?.stock === "number" ? productData.stock : 0;
                   if (typeof productData?.stock === "number") {
                     productUpdates.push({
                       ref: productDoc.ref as FirebaseFirestore.DocumentReference,
-                      data: { stock: currentStock + (item.quantity || 1) }
+                      data: { stock: currentStock + (item.quantity || 1) },
                     });
                   }
                 }
