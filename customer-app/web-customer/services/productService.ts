@@ -19,21 +19,48 @@ export interface Product {
     storeId?: string;
 }
 
+// Simple in-memory cache for products
+const productCache: Record<string, { data: Product[], timestamp: number }> = {};
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+
+// Retry utility
+async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
+    try {
+        return await fn();
+    } catch (error) {
+        if (retries <= 0) throw error;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return retry(fn, retries - 1, delay * 2);
+    }
+}
+
 export const ProductService = {
     async getProducts(categorySlug?: string): Promise<Product[]> {
-        try {
-            let q;
-            if (categorySlug && categorySlug !== 'all') {
-                q = query(collection(db, "products"), where("category", "==", categorySlug));
-            } else {
-                q = query(collection(db, "products"));
-            }
+        const cacheKey = categorySlug || 'all';
+        const now = Date.now();
 
-            const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as Product));
+        if (productCache[cacheKey] && (now - productCache[cacheKey].timestamp < CACHE_DURATION)) {
+            return productCache[cacheKey].data;
+        }
+
+        try {
+            return await retry(async () => {
+                let q;
+                if (categorySlug && categorySlug !== 'all') {
+                    q = query(collection(db, "products"), where("category", "==", categorySlug));
+                } else {
+                    q = query(collection(db, "products"));
+                }
+
+                const snapshot = await getDocs(q);
+                const products = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as Product));
+
+                productCache[cacheKey] = { data: products, timestamp: now };
+                return products;
+            });
         } catch (error) {
             console.error("Error fetching products:", error);
             return [];

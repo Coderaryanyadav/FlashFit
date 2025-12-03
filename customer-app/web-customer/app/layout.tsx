@@ -8,6 +8,7 @@ import { Providers } from "@/components/Providers";
 import { BackToTop } from "@/components/BackToTop";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { MobileNav } from "@/components/MobileNav";
+import { SessionTimeout } from "@/components/SessionTimeout";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -73,13 +74,14 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <Header />
-          <main className="min-h-screen pt-20 pb-16">
+          <main className="min-h-screen pt-40 pb-16">
             {children}
           </main>
           <Footer />
           <BackToTop />
           <NewsletterPopup />
           <MobileNav />
+          <SessionTimeout />
         </Providers>
       </body>
     </html>

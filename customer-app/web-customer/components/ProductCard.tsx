@@ -10,6 +10,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Confetti } from "./Confetti";
+import { formatCurrency } from "@/utils/format";
 
 interface ProductCardProps {
   id: string;
@@ -130,9 +131,13 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
               {title}
             </h3>
             <div className="flex flex-col items-end">
-              <span className="font-black text-lg text-white">₹{price}</span>
-              {discount && (
-                <span className="text-xs text-gray-500 line-through font-medium">₹{Math.round(price * (100 / (100 - discount)))}</span>
+              <span className="font-black text-lg text-white">
+                {price === 0 ? "FREE" : formatCurrency(price)}
+              </span>
+              {discount && price > 0 && (
+                <span className="text-xs text-gray-500 line-through font-medium">
+                  {formatCurrency(Math.round(price * (100 / (100 - discount))))}
+                </span>
               )}
             </div>
           </div>

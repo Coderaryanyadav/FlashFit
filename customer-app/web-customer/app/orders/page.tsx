@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Package, ChevronRight, Clock, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
 import Image from "next/image";
+import { formatDate } from "@/utils/date";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -97,7 +98,7 @@ export default function OrdersPage() {
                       <p className="font-bold text-white group-hover:text-primary transition-colors">Order #{order.id.slice(0, 8).toUpperCase()}</p>
                       <p className="text-sm text-neutral-500 flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : "Just now"}
+                        {formatDate(order.createdAt)}
                       </p>
                     </div>
                   </div>

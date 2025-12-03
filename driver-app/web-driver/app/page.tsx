@@ -68,7 +68,6 @@ export default function DriverHomePage() {
         const unsubDriver = onSnapshot(driverRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
-                console.log("Driver data from Firestore:", data); // Debug log
                 setIsOnline(data.isOnline === true); // Explicit boolean check
                 setStats({
                     earnings: data.totalEarnings || 0,
@@ -77,8 +76,6 @@ export default function DriverHomePage() {
                     todayOnlineMinutes: data.todayOnlineMinutes || 0,
                     lastSeen: data.lastSeen?.toDate() || null
                 });
-            } else {
-                console.log("Driver document does not exist"); // Debug log
             }
         }, (error) => {
             console.error("Error syncing driver status:", error);
@@ -125,7 +122,6 @@ export default function DriverHomePage() {
         if (!user) return;
         vibrate(50);
         const newStatus = !isOnline;
-        console.log("Toggling online status from", isOnline, "to", newStatus); // Debug log
 
         try {
             const updates: any = {
@@ -146,7 +142,6 @@ export default function DriverHomePage() {
                     lastSeenDate.getMonth() !== now.getMonth() ||
                     lastSeenDate.getFullYear() !== now.getFullYear()) {
                     updates.todayOnlineMinutes = 0;
-                    console.log("New day detected, resetting todayOnlineMinutes");
                 }
             } else {
                 // Going offline: calculate and add session time
@@ -165,9 +160,7 @@ export default function DriverHomePage() {
                 }
             }
 
-            console.log("Updating driver document with:", updates); // Debug log
             await updateDoc(doc(db, "drivers", user.uid), updates);
-            console.log("Driver document updated successfully"); // Debug log
 
             // Get and update location when going online
             if (newStatus && navigator.geolocation) {

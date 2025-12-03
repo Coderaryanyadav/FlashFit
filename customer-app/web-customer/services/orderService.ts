@@ -45,11 +45,17 @@ export const OrderService = {
     // Create a new order via Cloud Function
     createOrder: async (orderData: any) => {
         try {
+            const { auth } = await import("@/utils/firebase");
+            const token = await auth.currentUser?.getIdToken();
+
+            if (!token) throw new Error("User not authenticated");
+
             // Call Next.js API Route instead of Cloud Function
             const response = await fetch('/api/createOrder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     items: orderData.items,

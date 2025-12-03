@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,12 +11,21 @@ import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
 import { Header } from "@/components/Header";
 import { motion } from "framer-motion";
-import { ProductReviews } from "@/components/ProductReviews";
-import { AddReviewModal } from "@/components/AddReviewModal";
+import dynamic from "next/dynamic";
+
+const ProductReviews = dynamic(() => import("@/components/ProductReviews").then(mod => mod.ProductReviews), {
+  loading: () => <div className="h-40 bg-neutral-900/50 rounded-xl animate-pulse" />,
+  ssr: false
+});
+
+const AddReviewModal = dynamic(() => import("@/components/AddReviewModal").then(mod => mod.AddReviewModal), {
+  ssr: false
+});
 
 import { ProductService, Product } from "@/services/productService";
 import { SizeGuideModal } from "@/components/SizeGuideModal";
 import { Share2 } from "lucide-react";
+import { formatCurrency } from "@/utils/format";
 
 export default function ProductDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -83,7 +92,10 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const handleAddToCart = () => {
     if (!product) return;
 
-    if (!size && (product.category === 'men' || product.category === 'women' || product.category === 'kids' || product.category === 'urban-style' || product.category === 'everyday')) {
+    // Require size only if stock is an object (has sizes)
+    const requiresSize = typeof product.stock === 'object';
+
+    if (requiresSize && !size) {
       alert("Please select a size.");
       return;
     }
@@ -149,14 +161,8 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   }
 
   if (!product) {
-    return (
-      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-center p-4">
-        <p className="text-muted-foreground mb-4">Product not found.</p>
-        <Button variant="outline" onClick={() => router.back()}>
-          Go Back
-        </Button>
-      </div>
-    );
+    notFound();
+    return null;
   }
 
   return (
@@ -223,8 +229,14 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               {/* Reviews section removed - will be replaced with real review system */}
 
               <div className="flex items-baseline gap-4 mb-6">
-                <p className="text-4xl font-bold text-primary">₹{product.price}</p>
-                <p className="text-xl text-muted-foreground line-through">₹{Math.round(product.price * 1.2)}</p>
+                <p className="text-4xl font-bold text-primary">
+                  {product.price === 0 ? "FREE" : formatCurrency(product.price)}
+                </p>
+                {product.price > 0 && (
+                  <p className="text-xl text-muted-foreground line-through">
+                    {formatCurrency(Math.round(product.price * 1.2))}
+                  </p>
+                )}
                 <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-bold rounded-full border border-green-500/20">
                   20% OFF
                 </span>
@@ -245,19 +257,28 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               <p>{product.description || "Premium quality product designed for comfort and style. Made with high-quality materials to ensure durability and a perfect fit for your street style."}</p>
             </div>
 
-            {/* Size Selector - Only for clothing */}
-            {(product.category === 'men' || product.category === 'women' || product.category === 'kids' || product.category === 'urban-style' || product.category === 'everyday') && (
+            {/* Size Selector - Show if stock is an object (has sizes) or if it's a clothing category */}
+            {(typeof product.stock === 'object' || ['men', 'women', 'kids', 'urban-style', 'everyday', 'accessories'].includes(product.category || '')) && (
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <label className="text-sm font-bold text-white uppercase tracking-wider">Select Size</label>
                   <button onClick={() => setIsSizeGuideOpen(true)} className="text-xs text-primary font-medium hover:underline">Size Chart</button>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {["S", "M", "L", "XL", "XXL"].map((s) => {
+                  {/* If stock is object, use its keys (or standard sizes if keys match). If number, show standard sizes but they might all be available/unavailable based on total count (fallback) */}
+                  {(typeof product.stock === 'object' ? Object.keys(product.stock) : ["S", "M", "L", "XL", "XXL"]).sort((a, b) => {
+                    // Custom sort for sizes
+                    const order = { "XS": 1, "S": 2, "M": 3, "L": 4, "XL": 5, "XXL": 6, "3XL": 7 };
+                    return (order[a as keyof typeof order] || 99) - (order[b as keyof typeof order] || 99);
+                  }).map((s) => {
                     let isAvailable = true;
+                    let stockCount = 0;
+
                     if (typeof product.stock === 'object') {
-                      isAvailable = (product.stock as Record<string, number>)[s] > 0;
+                      stockCount = (product.stock as Record<string, number>)[s] || 0;
+                      isAvailable = stockCount > 0;
                     } else if (typeof product.stock === 'number') {
+                      stockCount = product.stock;
                       isAvailable = product.stock > 0;
                     }
 

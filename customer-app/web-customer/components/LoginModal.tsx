@@ -32,8 +32,14 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             return;
         }
 
-        if (password.length < 6) {
-            toast.error("Password must be at least 6 characters");
+        if (password.length < 8) {
+            toast.error("Password must be at least 8 characters");
+            return;
+        }
+
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!isLogin && !strongPasswordRegex.test(password)) {
+            toast.error("Password must contain uppercase, lowercase, number and special character");
             return;
         }
 
@@ -46,8 +52,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
         try {
             if (isLogin) {
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 toast.success("Welcome back!");
+
+                // Sync cart
+                const { useCartStore } = await import("@/store/useCartStore");
+                useCartStore.getState().syncCart(userCredential.user.uid);
             } else {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
 

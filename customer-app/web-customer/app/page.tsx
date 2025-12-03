@@ -12,11 +12,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/Header";
-import { LoginModal } from "@/components/LoginModal";
 import { CategoryService, Category } from "@/services/categoryService";
 import { ProductService } from "@/services/productService";
-import { Marquee } from "@/components/Marquee";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
+import dynamic from "next/dynamic";
+
+const LoginModal = dynamic(() => import("@/components/LoginModal").then(mod => mod.LoginModal), { ssr: false });
+const Marquee = dynamic(() => import("@/components/Marquee").then(mod => mod.Marquee), { ssr: false });
 
 const SERVICEABLE_PINCODE = "400059";
 

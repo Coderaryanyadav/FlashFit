@@ -9,16 +9,21 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Header } from "@/components/Header";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function CartPage() {
   const { user } = useAuth();
-  const { items, removeItem, updateQuantity, getTotal, clearCart, addItem } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotal, clearCart, addItem, validateCart } = useCartStore();
   const { items: wishlistItems, removeItem: removeFromWishlist } = useWishlistStore();
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
+
+  // Validate cart on mount
+  useEffect(() => {
+    validateCart();
+  }, [validateCart]);
 
   const subtotal = getTotal();
   const tax = subtotal * 0.18; // 18% GST

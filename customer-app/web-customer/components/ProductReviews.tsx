@@ -15,15 +15,33 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     const [avgRating, setAvgRating] = useState({ average: 0, count: 0 });
 
     const [user, setUser] = useState<any>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [showForm, setShowForm] = useState(false);
 
     useEffect(() => {
-        // Check auth status
-        const unsubscribe = auth.onAuthStateChanged((u) => {
+        // Check auth status and fetch role
+        const unsubscribe = auth.onAuthStateChanged(async (u) => {
             setUser(u);
+            if (u) {
+                try {
+                    const { doc, getDoc } = await import("firebase/firestore");
+                    const { db } = await import("@/utils/firebase");
+                    const userDoc = await getDoc(doc(db, "users", u.uid));
+                    if (userDoc.exists() && userDoc.data().role === "admin") {
+                        setIsAdmin(true);
+                    } else {
+                        setIsAdmin(false);
+                    }
+                } catch (error) {
+                    console.error("Error fetching user role:", error);
+                    setIsAdmin(false);
+                }
+            } else {
+                setIsAdmin(false);
+            }
         });
         return () => unsubscribe();
     }, []);
@@ -93,6 +111,17 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
         }
     };
 
+    const handleDeleteReview = async (reviewId: string) => {
+        if (!confirm("Are you sure you want to delete this review?")) return;
+        try {
+            await ReviewService.deleteReview(reviewId);
+            // No need to update state manually, subscription will handle it
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            alert("Failed to delete review.");
+        }
+    };
+
     return (
         <div className="space-y-8">
             {/* Rating Summary */}
@@ -117,7 +146,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
             ) : (
                 <div className="space-y-6">
                     {reviews.map((review) => (
-                        <div key={review.id} className="border-b border-white/5 pb-6 last:border-0">
+                        <div key={review.id} className="border-b border-white/5 pb-6 last:border-0 group relative">
                             <div className="flex items-start justify-between mb-3">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
@@ -147,6 +176,14 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                                             : 'Recently'}
                                     </p>
                                 </div>
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => handleDeleteReview(review.id)}
+                                        className="text-red-500 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        Delete
+                                    </button>
+                                )}
                             </div>
                             <p className="text-gray-300 text-sm leading-relaxed pl-10">{review.comment}</p>
                         </div>

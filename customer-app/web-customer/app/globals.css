@@ -33,7 +33,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -88,4 +88,17 @@
 
 .animate-pulse-glow {
   animation: pulse-glow 2s infinite;
+}
+
+/* Device Orientation Support */
+@media screen and (orientation: landscape) and (max-width: 900px) {
+  .min-h-screen {
+    min-height: 100vh;
+    /* Ensure full height */
+  }
+
+  /* Adjust padding for landscape */
+  main {
+    padding-top: 5rem !important;
+  }
 }

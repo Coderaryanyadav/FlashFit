@@ -81,8 +81,8 @@ export const ReviewService = {
         const q = query(
             collection(db, "reviews"),
             where("productId", "==", productId),
-            where("approved", "==", true),
-            orderBy("createdAt", "desc")
+            where("approved", "==", true)
+            // Removed orderBy to avoid index requirement. Sorting client-side.
         );
 
         return onSnapshot(q, (snapshot) => {
@@ -90,6 +90,14 @@ export const ReviewService = {
                 id: doc.id,
                 ...doc.data()
             })) as Review[];
+
+            // Sort by createdAt desc
+            reviews.sort((a, b) => {
+                const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
+
             callback(reviews);
         }, (error) => {
             console.error("Error subscribing to reviews:", error);

@@ -48,33 +48,37 @@ export function SmartSearch({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Simple Filtering Logic
+    // Debounce Filtering Logic
     useEffect(() => {
-        if (!query) {
-            setSuggestions([]);
-            return;
-        }
-
-        const lowerQuery = query.toLowerCase();
-        let newSuggestions: string[] = [];
-
-        // 1. Direct matches from trending
-        const directMatches = TRENDING_SEARCHES.filter(s => s.toLowerCase().includes(lowerQuery));
-        newSuggestions = [...newSuggestions, ...directMatches];
-
-        // 2. AI Context Mapping (Simplified)
-        Object.entries(AI_SUGGESTIONS).forEach(([key, values]) => {
-            if (lowerQuery.includes(key) || key.includes(lowerQuery)) {
-                newSuggestions = [...newSuggestions, ...values];
+        const timer = setTimeout(() => {
+            if (!query) {
+                setSuggestions([]);
+                return;
             }
-        });
 
-        // 3. Fallback
-        if (newSuggestions.length === 0) {
-            newSuggestions = [`Search for "${query}"`];
-        }
+            const lowerQuery = query.toLowerCase();
+            let newSuggestions: string[] = [];
 
-        setSuggestions(Array.from(new Set(newSuggestions)).slice(0, 5));
+            // 1. Direct matches from trending
+            const directMatches = TRENDING_SEARCHES.filter(s => s.toLowerCase().includes(lowerQuery));
+            newSuggestions = [...newSuggestions, ...directMatches];
+
+            // 2. AI Context Mapping (Simplified)
+            Object.entries(AI_SUGGESTIONS).forEach(([key, values]) => {
+                if (lowerQuery.includes(key) || key.includes(lowerQuery)) {
+                    newSuggestions = [...newSuggestions, ...values];
+                }
+            });
+
+            // 3. Fallback
+            if (newSuggestions.length === 0) {
+                newSuggestions = [`Search for "${query}"`];
+            }
+
+            setSuggestions(Array.from(new Set(newSuggestions)).slice(0, 5));
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(timer);
     }, [query]);
 
     const handleSearch = (q: string) => {

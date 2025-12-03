@@ -28,13 +28,20 @@ export default function ReviewsPage() {
     const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('pending');
 
     useEffect(() => {
-        const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, "reviews"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const reviewsData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             })) as Review[];
+
+            // Sort by createdAt desc
+            reviewsData.sort((a, b) => {
+                const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
 
             setReviews(reviewsData);
             setLoading(false);
@@ -175,8 +182,8 @@ export default function ReviewsPage() {
                                                     <Star
                                                         key={star}
                                                         className={`h-4 w-4 ${star <= review.rating
-                                                                ? "fill-yellow-500 text-yellow-500"
-                                                                : "text-gray-600"
+                                                            ? "fill-yellow-500 text-yellow-500"
+                                                            : "text-gray-600"
                                                             }`}
                                                     />
                                                 ))}

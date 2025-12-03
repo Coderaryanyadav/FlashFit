@@ -37,6 +37,23 @@ export default function CheckoutPage() {
     lng: 0
   });
 
+  // Load saved form data from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("checkout_form_data");
+    if (saved) {
+      try {
+        setFormData(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved checkout data");
+      }
+    }
+  }, []);
+
+  // Save form data to localStorage on change
+  useEffect(() => {
+    localStorage.setItem("checkout_form_data", JSON.stringify(formData));
+  }, [formData]);
+
   // Fetch saved addresses
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -101,28 +118,44 @@ export default function CheckoutPage() {
   };
 
   const validateStep1 = () => {
+    const specialCharRegex = /[^a-zA-Z0-9\s,.-]/;
+
     if (!formData.fullName || formData.fullName.trim().length < 2) {
-      alert("Please enter a valid name (minimum 2 characters)");
+      toast.error("Please enter a valid name (minimum 2 characters)");
+      return false;
+    }
+    if (specialCharRegex.test(formData.fullName)) {
+      toast.error("Name contains invalid characters");
       return false;
     }
 
     if (!formData.phone || formData.phone.length !== 10) {
-      alert("Please enter a valid 10-digit phone number");
+      toast.error("Please enter a valid 10-digit phone number");
       return false;
     }
 
     if (!formData.address || formData.address.trim().length < 5) {
-      alert("Please enter a complete address (minimum 5 characters)");
+      toast.error("Please enter a complete address (minimum 5 characters)");
+      return false;
+    }
+    // Address can have some special chars like # or / so we use a looser regex or skip strict check
+    // But let's prevent dangerous script tags or similar
+    if (/[<>]/.test(formData.address)) {
+      toast.error("Address contains invalid characters");
       return false;
     }
 
     if (!formData.city || formData.city.trim().length < 2) {
-      alert("Please enter a valid city name");
+      toast.error("Please enter a valid city name");
+      return false;
+    }
+    if (specialCharRegex.test(formData.city)) {
+      toast.error("City contains invalid characters");
       return false;
     }
 
     if (!formData.pincode || formData.pincode.length !== 6) {
-      alert("Please enter a valid 6-digit pincode");
+      toast.error("Please enter a valid 6-digit pincode");
       return false;
     }
 
@@ -156,6 +189,25 @@ export default function CheckoutPage() {
     try {
       const userId = auth.currentUser ? auth.currentUser.uid : "guest";
 
+      // Email Verification Check
+      if (auth.currentUser && !auth.currentUser.emailVerified) {
+        toast.error("Please verify your email address to place an order.", {
+          action: {
+            label: "Resend Email",
+            onClick: async () => {
+              if (auth.currentUser) {
+                await import("firebase/auth").then(({ sendEmailVerification }) =>
+                  sendEmailVerification(auth.currentUser!)
+                );
+                toast.success("Verification email sent!");
+              }
+            }
+          }
+        });
+        setLoading(false);
+        return;
+      }
+
       // Save address if requested
       if (saveAddress && auth.currentUser) {
         try {
@@ -178,27 +230,35 @@ export default function CheckoutPage() {
       // In a multi-vendor app, we might need to split orders, but for now we assume one store or handle it in backend
       const storeId = (items[0] as any).storeId || "default_store";
 
-      const orderId = await OrderService.createOrder({
-        userId,
-        items: items.map(item => ({
-          productId: item.id,
-          quantity: item.quantity,
-          size: item.size,
-          price: item.price,
-          title: item.title,
-          image: item.image
-        })),
-        totalAmount: total(),
-        storeId,
-        shippingAddress: {
-          name: formData.fullName,
-          phone: formData.phone,
-          street: formData.address,
-          city: formData.city,
-          pincode: formData.pincode,
-          location: { lat: formData.lat, lng: formData.lng }
-        }
-      });
+      // Timeout Promise
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out. Please check your internet connection.")), 15000)
+      );
+
+      const orderId = await Promise.race([
+        OrderService.createOrder({
+          userId,
+          items: items.map(item => ({
+            productId: item.id,
+            quantity: item.quantity,
+            size: item.size,
+            price: item.price,
+            title: item.title,
+            image: item.image
+          })),
+          totalAmount: total(),
+          storeId,
+          shippingAddress: {
+            name: formData.fullName,
+            phone: formData.phone,
+            street: formData.address,
+            city: formData.city,
+            pincode: formData.pincode,
+            location: { lat: formData.lat, lng: formData.lng }
+          }
+        }),
+        timeoutPromise
+      ]) as string;
       console.log("Order created with ID: ", orderId);
 
       clearCart();
@@ -210,7 +270,7 @@ export default function CheckoutPage() {
       const errorMessage = error?.message || "Failed to place order. Please try again.";
       // Clean up Firebase error prefix if present
       const cleanMessage = errorMessage.replace("INTERNAL: ", "").replace("INVALID_ARGUMENT: ", "").replace("FAILED_PRECONDITION: ", "");
-      alert(cleanMessage);
+      toast.error(cleanMessage);
     } finally {
       setLoading(false);
     }
@@ -283,6 +343,8 @@ export default function CheckoutPage() {
               <label className="text-sm font-medium text-neutral-300">Phone Number *</label>
               <Input
                 name="phone"
+                type="tel"
+                inputMode="numeric"
                 placeholder="10-digit mobile number"
                 value={formData.phone}
                 onChange={handleInputChange}
@@ -318,6 +380,8 @@ export default function CheckoutPage() {
                 <label className="text-sm font-medium text-neutral-300">Pincode *</label>
                 <Input
                   name="pincode"
+                  type="tel"
+                  inputMode="numeric"
                   placeholder="400001"
                   value={formData.pincode}
                   onChange={handleInputChange}

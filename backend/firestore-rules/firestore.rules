@@ -120,5 +120,10 @@ service cloud.firestore {
     match /users/{userId}/addresses/{addressId} {
       allow read, write: if isOwner(userId);
     }
+
+    // User Cart: Users can manage their own cart
+    match /users/{userId}/cart/{cartId} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }

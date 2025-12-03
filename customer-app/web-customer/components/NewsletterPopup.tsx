@@ -41,7 +41,9 @@ export function NewsletterPopup() {
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[800px] p-0 bg-black border-zinc-800 text-white overflow-hidden gap-0">
+            <DialogContent
+                className="sm:max-w-[800px] p-0 bg-black border-zinc-800 text-white overflow-hidden gap-0"
+            >
                 <div className="grid md:grid-cols-2">
                     <div className="relative h-64 md:h-auto bg-zinc-900">
                         <Image
@@ -57,6 +59,7 @@ export function NewsletterPopup() {
                         <button
                             onClick={handleClose}
                             className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            tabIndex={-1}
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -76,6 +79,7 @@ export function NewsletterPopup() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                         className="bg-zinc-900 border-zinc-700 text-white placeholder:text-gray-500"
+                                        autoFocus={false}
                                     />
                                     <Button
                                         type="submit"

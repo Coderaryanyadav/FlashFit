@@ -25,15 +25,29 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                if (user.email !== "admin@flashfit.com") {
+                try {
+                    // Check role in Firestore
+                    const { doc, getDoc } = await import("firebase/firestore");
+                    const { db } = await import("@/utils/firebase");
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+                    if (userDoc.exists() && userDoc.data().role === "admin") {
+                        setUser(user);
+                        if (isLoginPage) {
+                            router.push("/");
+                        }
+                    } else {
+                        // Not an admin
+                        console.error("Access denied: User is not an admin");
+                        await auth.signOut();
+                        setUser(null);
+                        router.push("/login");
+                    }
+                } catch (error) {
+                    console.error("Error verifying admin role:", error);
                     await auth.signOut();
                     setUser(null);
                     router.push("/login");
-                    return;
-                }
-                setUser(user);
-                if (isLoginPage) {
-                    router.push("/");
                 }
             } else {
                 setUser(null);

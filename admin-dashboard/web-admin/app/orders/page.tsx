@@ -8,6 +8,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Eye, CheckCircle, Truck, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { AuditService, AuditAction } from "@/services/auditService";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,6 +22,7 @@ import {
     DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { OrderDetailsModal } from "@/components/OrderDetailsModal";
+import { formatDate } from "@/utils/date";
 
 import { Order } from "@flashfit/types";
 
@@ -49,9 +52,11 @@ export default function OrdersPage() {
                 status: newStatus,
                 description: `Status updated to ${newStatus} by admin`
             });
+            await AuditService.logAction(AuditAction.UPDATE_ORDER_STATUS, { status: newStatus }, id);
+            toast.success(`Status updated to ${newStatus}`);
         } catch (error) {
             console.error("Error updating status:", error);
-            alert("Failed to update status");
+            toast.error("Failed to update status");
         }
     };
 
@@ -151,9 +156,11 @@ export default function OrdersPage() {
                                         paymentVerifiedAt: new Date(),
                                         paymentVerifiedBy: 'admin'
                                     });
+                                    await AuditService.logAction(AuditAction.VERIFY_PAYMENT, { status: 'paid' }, order.id);
+                                    toast.success("Payment verified");
                                 } catch (error) {
                                     console.error("Error verifying payment:", error);
-                                    alert("Failed to verify payment");
+                                    toast.error("Failed to verify payment");
                                 }
                             }
                         }}
@@ -167,10 +174,8 @@ export default function OrdersPage() {
             accessorKey: "createdAt",
             header: "Date",
             cell: ({ row }) => {
-                // Handle Firestore Timestamp
-                const date = row.original.createdAt?.toDate ? row.original.createdAt.toDate() : new Date();
-                return <span className="text-xs text-muted-foreground">{date.toLocaleDateString()}</span>
-            }
+                return <span className="text-xs text-muted-foreground">{formatDate(row.original.createdAt)}</span>
+            },
         },
         {
             id: "actions",
@@ -235,9 +240,11 @@ export default function OrdersPage() {
                                                     paymentVerifiedAt: new Date(),
                                                     paymentVerifiedBy: 'admin'
                                                 });
+                                                await AuditService.logAction(AuditAction.VERIFY_PAYMENT, { status: 'paid' }, order.id);
+                                                toast.success("Payment verified");
                                             } catch (error) {
                                                 console.error("Error verifying payment:", error);
-                                                alert("Failed to verify payment");
+                                                toast.error("Failed to verify payment");
                                             }
                                         }
                                     }} className="text-blue-400 font-bold">
@@ -249,9 +256,11 @@ export default function OrdersPage() {
                                         if (confirm('Are you sure you want to delete this order?')) {
                                             try {
                                                 await deleteDoc(doc(db, "orders", order.id));
+                                                await AuditService.logAction(AuditAction.DELETE_ORDER, {}, order.id);
+                                                toast.success("Order deleted");
                                             } catch (error) {
                                                 console.error("Error deleting order:", error);
-                                                alert("Failed to delete order");
+                                                toast.error("Failed to delete order");
                                             }
                                         }
                                     }}

@@ -10,24 +10,44 @@ import { db, auth } from "@/utils/firebase"; // We need admin SDK for transactio
 // Let's try to use the client SDK for now but we might hit permission issues if rules are strict.
 // The best way for Vercel is to use firebase-admin.
 
-import { getAdminDb } from "@/utils/firebaseAdmin";
+import { getAdminDb, getAdminAuth } from "@/utils/firebaseAdmin";
 import { FieldValue, Transaction } from "firebase-admin/firestore";
 
 export async function POST(request: Request) {
     try {
         // Initialize Firebase Admin lazily
         const adminDb = getAdminDb();
+        const adminAuth = getAdminAuth();
 
         // Check if Firebase Admin is initialized
-        if (!adminDb) {
-            console.error("Firebase Admin DB is not initialized");
+        if (!adminDb || !adminAuth) {
+            console.error("Firebase Admin is not initialized");
             return NextResponse.json({
                 error: "Server configuration error: Database not initialized. Please check Firebase credentials."
             }, { status: 500 });
         }
 
+        // Verify Auth Token
+        const authHeader = request.headers.get("Authorization");
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return NextResponse.json({ error: "Unauthorized: Missing token" }, { status: 401 });
+        }
+
+        const token = authHeader.split("Bearer ")[1];
+        let decodedToken;
+        try {
+            decodedToken = await adminAuth.verifyIdToken(token);
+        } catch (e) {
+            console.error("Token verification failed:", e);
+            return NextResponse.json({ error: "Unauthorized: Invalid token" }, { status: 401 });
+        }
+
         const body = await request.json();
         const { items, address, storeId, totalAmount, userId } = body;
+
+        if (userId !== decodedToken.uid) {
+            return NextResponse.json({ error: "Unauthorized: User ID mismatch" }, { status: 403 });
+        }
 
         if (!items || !address || !storeId || !totalAmount || !userId) {
             console.error("Missing required fields:", { items: !!items, address: !!address, storeId: !!storeId, totalAmount: !!totalAmount, userId: !!userId });
@@ -57,6 +77,25 @@ export async function POST(request: Request) {
         }
 
         // FETCH DRIVERS (Outside Transaction for initial query, then re-check inside)
+
+        // Rate Limiting: Check last order time
+        const lastOrderSnap = await adminDb.collection("orders")
+            .where("userId", "==", userId)
+            .orderBy("createdAt", "desc")
+            .limit(1)
+            .get();
+
+        if (!lastOrderSnap.empty) {
+            const lastOrder = lastOrderSnap.docs[0].data();
+            if (lastOrder.createdAt) {
+                const lastOrderTime = lastOrder.createdAt.toDate().getTime();
+                const now = Date.now();
+                if (now - lastOrderTime < 60000) { // 1 minute
+                    return NextResponse.json({ error: "Please wait a moment before placing another order." }, { status: 429 });
+                }
+            }
+        }
+
         const driversSnap = await adminDb.collection("drivers")
             .where("isOnline", "==", true)
             .where("currentOrderId", "==", null)
@@ -81,6 +120,8 @@ export async function POST(request: Request) {
 
         // Transaction
         await adminDb.runTransaction(async (t: Transaction) => {
+            let calculatedTotal = 0;
+
             // 1. Check and decrement stock
             for (const item of items) {
                 const productRef = adminDb.collection("products").doc(item.productId);
@@ -91,6 +132,9 @@ export async function POST(request: Request) {
                 }
 
                 const productData = productDoc.data();
+
+                // Server-side price validation
+                calculatedTotal += (productData.price || 0) * item.quantity;
 
                 // Handle stock validation
                 if (productData?.stock && typeof productData.stock === "object") {
@@ -125,6 +169,9 @@ export async function POST(request: Request) {
 
             const expectedDeliveryDate = new Date();
             expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + maxDeliveryDays);
+
+            // Recalculate final amount with surge
+            const finalAmount = calculatedTotal * surgeMultiplier;
 
             // 2. Create Order
             const orderData: any = {

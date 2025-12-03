@@ -15,14 +15,50 @@ export default function ProfilePage() {
     const router = useRouter();
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+        const unsub = onAuthStateChanged(auth, (u) => {
+            if (u) {
+                setUser(u);
+            } else {
+                router.push("/login");
+            }
+        });
         return () => unsub();
-    }, []);
+    }, [router]);
 
     useEffect(() => {
         if (!user) return;
-        const unsub = onSnapshot(doc(db, "drivers", user.uid), (doc) => {
-            if (doc.exists()) setStats(doc.data());
+        const unsub = onSnapshot(doc(db, "drivers", user.uid), async (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setStats(data);
+
+                // Check for daily/monthly reset
+                const lastUpdate = data.lastEarningsUpdate?.toDate() || new Date(0);
+                const now = new Date();
+
+                const isSameDay = lastUpdate.getDate() === now.getDate() &&
+                    lastUpdate.getMonth() === now.getMonth() &&
+                    lastUpdate.getFullYear() === now.getFullYear();
+
+                const isSameMonth = lastUpdate.getMonth() === now.getMonth() &&
+                    lastUpdate.getFullYear() === now.getFullYear();
+
+                if (!isSameDay || !isSameMonth) {
+                    const updates: any = {
+                        lastEarningsUpdate: now
+                    };
+
+                    if (!isSameDay) updates.dailyEarnings = 0;
+                    if (!isSameMonth) updates.monthlyEarnings = 0;
+
+                    try {
+                        await updateDoc(doc(db, "drivers", user.uid), updates);
+                        console.log("Reset earnings stats:", updates);
+                    } catch (e) {
+                        console.error("Error resetting earnings:", e);
+                    }
+                }
+            }
         });
         return () => unsub();
     }, [user]);
@@ -83,21 +119,27 @@ export default function ProfilePage() {
                 <p className="text-gray-500">{user.email}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
-                    <div className="flex items-center gap-2 mb-2 text-gray-400">
-                        <TrendingUp className="h-4 w-4" />
-                        <span className="text-xs uppercase font-bold">Earnings</span>
-                    </div>
-                    <p className="text-2xl font-bold text-green-400">₹{stats.totalEarnings || 0}</p>
+            <div className="grid grid-cols-3 gap-2 mb-8">
+                <div className="bg-zinc-900 p-3 rounded-2xl border border-zinc-800 flex flex-col items-center text-center">
+                    <span className="text-[10px] uppercase font-bold text-gray-500">Today</span>
+                    <p className="text-xl font-bold text-green-400">₹{stats.dailyEarnings || 0}</p>
                 </div>
-                <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
-                    <div className="flex items-center gap-2 mb-2 text-gray-400">
-                        <Package className="h-4 w-4" />
-                        <span className="text-xs uppercase font-bold">Deliveries</span>
-                    </div>
-                    <p className="text-2xl font-bold text-white">{stats.totalDeliveries || 0}</p>
+                <div className="bg-zinc-900 p-3 rounded-2xl border border-zinc-800 flex flex-col items-center text-center">
+                    <span className="text-[10px] uppercase font-bold text-gray-500">Month</span>
+                    <p className="text-xl font-bold text-green-400">₹{stats.monthlyEarnings || 0}</p>
                 </div>
+                <div className="bg-zinc-900 p-3 rounded-2xl border border-zinc-800 flex flex-col items-center text-center">
+                    <span className="text-[10px] uppercase font-bold text-gray-500">Total</span>
+                    <p className="text-xl font-bold text-white">₹{stats.totalEarnings || 0}</p>
+                </div>
+            </div>
+
+            <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 mb-4">
+                <div className="flex items-center gap-2 mb-2 text-gray-400">
+                    <Package className="h-4 w-4" />
+                    <span className="text-xs uppercase font-bold">Total Deliveries</span>
+                </div>
+                <p className="text-2xl font-bold text-white">{stats.totalDeliveries || 0}</p>
             </div>
 
             <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 mb-8">
