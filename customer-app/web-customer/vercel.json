@@ -1,0 +1,10 @@
+{
+    "buildCommand": "cd ../.. && turbo run build --filter=customer-app",
+    "outputDirectory": ".next",
+    "installCommand": "npm install --prefix=../..",
+    "framework": "nextjs",
+    "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
+    "env": {
+        "TURBO_TELEMETRY_DISABLED": "1"
+    }
+}
