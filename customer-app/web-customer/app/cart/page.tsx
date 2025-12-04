@@ -99,12 +99,18 @@ export default function CartPage() {
                   <div className="flex gap-6">
                     {/* Product Image */}
                     <div className="relative h-32 w-32 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-800">
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt={item.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-neutral-800 text-neutral-500 text-xs">
+                          No Image
+                        </div>
+                      )}
                     </div>
 
                     {/* Product Details */}
@@ -159,12 +165,18 @@ export default function CartPage() {
                   {wishlistItems.map((item) => (
                     <div key={item.id} className="bg-neutral-900/30 rounded-xl border border-white/5 p-3 flex gap-3 group hover:border-white/20 transition-all">
                       <div className="relative w-20 h-20 bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-neutral-800 text-neutral-500 text-[10px]">
+                            No Image
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-col justify-between py-1 flex-1">
                         <div>

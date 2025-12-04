@@ -43,8 +43,11 @@ export function ProductCard({ id, title, price, image, weight, discount, categor
       id,
       title,
       price,
-      image,
+      images: [image],
       category: category || "Uncategorized",
+      description: "",
+      storeId: "unknown",
+      isActive: true,
       stock: typeof stock === 'number' ? stock : (stock ? Object.values(stock).reduce((a, b) => a + b, 0) : 0)
     });
 

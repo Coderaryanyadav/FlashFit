@@ -66,13 +66,19 @@ export function CartDrawer() {
                                 {items.map((item) => (
                                     <div key={item.id} className="flex gap-4 group">
                                         <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-white border shadow-sm shrink-0">
-                                            <Image
-                                                src={item.image}
-                                                alt={item.title}
-                                                fill
-                                                sizes="80px"
-                                                className="object-cover"
-                                            />
+                                            {item.image ? (
+                                                <Image
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    fill
+                                                    sizes="80px"
+                                                    className="object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                                                    <ShoppingBag className="h-6 w-6" />
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between py-1">
                                             <div className="space-y-1">

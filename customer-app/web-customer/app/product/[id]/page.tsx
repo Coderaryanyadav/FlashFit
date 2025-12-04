@@ -119,10 +119,12 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
       id: product.id,
       title: product.title,
       price: product.price,
-      image: product.image,
+      images: [product.image],
       description: product.description || "",
       category: product.category || "Uncategorized",
-      stock: availableStock // Pass specific size stock to cart
+      stock: availableStock,
+      storeId: product.storeId || "unknown",
+      isActive: true
     }, size, quantity);
 
     toast.success("Added to cart", {

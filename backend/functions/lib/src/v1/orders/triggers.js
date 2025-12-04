@@ -72,7 +72,7 @@ exports.autoAssignDriver = functions.firestore
                         logs: firestore_1.FieldValue.arrayUnion({
                             status: "assigned",
                             timestamp: new Date(),
-                            driverId: nearestDriver.id
+                            driverId: nearestDriver.id,
                         }),
                     },
                 });
@@ -90,7 +90,7 @@ exports.autoAssignDriver = functions.firestore
                         status: "searching_driver",
                         logs: firestore_1.FieldValue.arrayUnion({
                             status: "no_driver_available",
-                            timestamp: new Date()
+                            timestamp: new Date(),
                         }),
                     },
                 });

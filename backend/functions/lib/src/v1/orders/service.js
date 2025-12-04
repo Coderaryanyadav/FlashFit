@@ -71,7 +71,7 @@ class OrderService {
                     // Prepare update
                     productUpdates.push({
                         ref: productDoc.ref,
-                        data: { [`stock.${item.size}`]: currentStock - item.quantity }
+                        data: { [`stock.${item.size}`]: currentStock - item.quantity },
                     });
                 }
                 else {
@@ -84,7 +84,7 @@ class OrderService {
                     if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
                         productUpdates.push({
                             ref: productDoc.ref,
-                            data: { stock: currentStock - item.quantity }
+                            data: { stock: currentStock - item.quantity },
                         });
                     }
                 }
@@ -196,14 +196,14 @@ class OrderService {
                 const productId = item.productId || item.id;
                 if (productId) {
                     // Find the doc
-                    const productDoc = returnedProductDocs.find(d => d.id === productId);
+                    const productDoc = returnedProductDocs.find((d) => d.id === productId);
                     if (productDoc && productDoc.exists) {
                         const productData = productDoc.data();
                         if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
                             const currentStock = productData.stock[item.size] || 0;
                             productUpdates.push({
                                 ref: productDoc.ref,
-                                data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) }
+                                data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) },
                             });
                         }
                         else {
@@ -211,7 +211,7 @@ class OrderService {
                             if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
                                 productUpdates.push({
                                     ref: productDoc.ref,
-                                    data: { stock: currentStock + (item.quantity || 1) }
+                                    data: { stock: currentStock + (item.quantity || 1) },
                                 });
                             }
                         }
@@ -283,7 +283,9 @@ class OrderService {
                 }
             }
             // Determine if we need to restore stock (Read Phase)
-            const shouldRestoreStock = status === "cancelled" && (orderData === null || orderData === void 0 ? void 0 : orderData.status) !== "cancelled" && (orderData === null || orderData === void 0 ? void 0 : orderData.status) !== "returned";
+            const shouldRestoreStock = status === "cancelled" &&
+                (orderData === null || orderData === void 0 ? void 0 : orderData.status) !== "cancelled" &&
+                (orderData === null || orderData === void 0 ? void 0 : orderData.status) !== "returned";
             const items = (orderData === null || orderData === void 0 ? void 0 : orderData.items) || [];
             const productUpdates = [];
             if (shouldRestoreStock) {
@@ -296,14 +298,14 @@ class OrderService {
                     items.forEach((item) => {
                         const productId = item.productId || item.id;
                         if (productId) {
-                            const productDoc = productDocs.find(d => d.id === productId);
+                            const productDoc = productDocs.find((d) => d.id === productId);
                             if (productDoc && productDoc.exists) {
                                 const productData = productDoc.data();
                                 if (item.size && (productData === null || productData === void 0 ? void 0 : productData.stock) && typeof productData.stock === "object") {
                                     const currentStock = productData.stock[item.size] || 0;
                                     productUpdates.push({
                                         ref: productDoc.ref,
-                                        data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) }
+                                        data: { [`stock.${item.size}`]: currentStock + (item.quantity || 1) },
                                     });
                                 }
                                 else {
@@ -311,7 +313,7 @@ class OrderService {
                                     if (typeof (productData === null || productData === void 0 ? void 0 : productData.stock) === "number") {
                                         productUpdates.push({
                                             ref: productDoc.ref,
-                                            data: { stock: currentStock + (item.quantity || 1) }
+                                            data: { stock: currentStock + (item.quantity || 1) },
                                         });
                                     }
                                 }

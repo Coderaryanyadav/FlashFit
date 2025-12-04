@@ -47,7 +47,8 @@ export const useCartStore = create<CartStore>()(
                         ),
                     });
                 } else {
-                    set({ items: [...items, { ...product, quantity, size }] });
+                    const image = product.images?.[0] || '';
+                    set({ items: [...items, { ...product, productId: product.id, quantity, size, image }] });
                 }
             },
             removeItem: (productId, size = '') => {

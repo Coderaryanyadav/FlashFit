@@ -6,8 +6,8 @@ Sentry.init({
     debug: false,
     environment: process.env.NODE_ENV,
     integrations: [
-        new Sentry.BrowserTracing(),
-        new Sentry.Replay({
+        Sentry.browserTracingIntegration(),
+        Sentry.replayIntegration({
             maskAllText: true,
             blockAllMedia: true,
         }),
