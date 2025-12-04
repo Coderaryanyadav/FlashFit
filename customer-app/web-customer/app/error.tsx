@@ -20,7 +20,7 @@ export default function Error({
                 <h1 className="text-6xl font-bold mb-4">Oops!</h1>
                 <h2 className="text-2xl mb-4">Something went wrong</h2>
                 <p className="text-gray-400 mb-8">
-                    We're sorry for the inconvenience. Our team has been notified.
+                    We&apos;re sorry for the inconvenience. Our team has been notified.
                 </p>
                 <div className="space-y-4">
                     <Button onClick={reset} className="w-full">

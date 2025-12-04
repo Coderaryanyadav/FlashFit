@@ -15,32 +15,39 @@ export function SystemStatus() {
 
     useEffect(() => {
         const checkSystem = async () => {
-            const result: any = { ...status };
+            let newApiStatus = "checking...";
+            let newFirestoreStatus = "checking...";
+            let newProductCount = 0;
 
             // 1. Check API
             try {
                 const res = await fetch('/api/products?pincode=400059');
                 if (res.ok) {
                     const data = await res.json();
-                    result.api = "✅ Online";
-                    result.products = data.length;
+                    newApiStatus = "✅ Online";
+                    newProductCount = data.length;
                 } else {
-                    result.api = `❌ Failed (${res.status})`;
+                    newApiStatus = `❌ Failed (${res.status})`;
                 }
             } catch (e: any) {
-                result.api = `❌ Error: ${e.message}`;
+                newApiStatus = `❌ Error: ${e.message}`;
             }
 
             // 2. Check Firestore Client
             try {
                 const q = query(collection(db, "products"), limit(1));
                 await getDocs(q);
-                result.firestore = "✅ Connected";
+                newFirestoreStatus = "✅ Connected";
             } catch (e: any) {
-                result.firestore = `❌ Blocked: ${e.message}`;
+                newFirestoreStatus = `❌ Blocked: ${e.message}`;
             }
 
-            setStatus(result);
+            setStatus({
+                api: newApiStatus,
+                firestore: newFirestoreStatus,
+                products: newProductCount,
+                error: null
+            });
         };
 
         checkSystem();
