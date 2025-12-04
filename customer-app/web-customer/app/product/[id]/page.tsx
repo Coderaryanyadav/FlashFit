@@ -146,7 +146,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Error sharing', error);
+        // Share failed
       }
     } else {
       navigator.clipboard.writeText(window.location.href);

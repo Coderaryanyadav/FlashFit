@@ -259,7 +259,7 @@ export default function CheckoutPage() {
         }),
         timeoutPromise
       ]) as string;
-      console.log("Order created with ID: ", orderId);
+      // Order created successfully
 
       clearCart();
       setPlacedOrderId(orderId);

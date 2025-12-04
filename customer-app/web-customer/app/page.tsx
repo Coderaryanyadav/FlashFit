@@ -76,12 +76,6 @@ export default function HomePage() {
         setTrendingProducts(trends);
         setProducts(pincodeProducts);
 
-        console.log("Data loaded:", {
-          categories: catsData.length,
-          trending: trends.length,
-          products: pincodeProducts.length
-        });
-
       } catch (error) {
         console.error("Error loading homepage data:", error);
       } finally {
