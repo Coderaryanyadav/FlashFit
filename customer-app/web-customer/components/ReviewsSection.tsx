@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Star, ThumbsUp, CheckCircle, User, Send } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { db, auth } from "@/utils/firebase";
+import { Progress } from "@/shared/ui/progress";
+import { Button } from "@/shared/ui/button";
+import { Textarea } from "@/shared/ui/textarea";
+import { db, auth } from "@/shared/infrastructure/firebase";
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 

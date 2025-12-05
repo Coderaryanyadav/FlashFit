@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 import { Search, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 

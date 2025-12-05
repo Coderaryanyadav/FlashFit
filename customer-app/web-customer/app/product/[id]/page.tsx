@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
-import { useCartStore } from "@/store/useCartStore";
-import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/features/cart/store/useCartStore";
+import { Button } from "@/shared/ui/button";
 import { toast } from "sonner";
 import { ArrowLeft, ShoppingCart, Star, Truck, ShieldCheck, RefreshCw, Heart, Sparkles, MessageSquare, Store } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/features/products/ui/ProductCard";
 import { Header } from "@/components/Header";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -22,7 +22,8 @@ const AddReviewModal = dynamic(() => import("@/components/AddReviewModal").then(
   ssr: false
 });
 
-import { ProductService, Product } from "@/services/productService";
+import { ProductService } from "@/features/products/services/productService";
+import { Product } from "@flashfit/types";
 import { SizeGuideModal } from "@/components/SizeGuideModal";
 import { Share2 } from "lucide-react";
 import { formatCurrency } from "@/utils/format";
@@ -84,8 +85,8 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   }, [product]);
 
   useEffect(() => {
-    if (product?.image) {
-      setImgSrc(product.image);
+    if (product?.images && product.images.length > 0) {
+      setImgSrc(product.images[0]);
     }
   }, [product]);
 
@@ -119,7 +120,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
       id: product.id,
       title: product.title,
       price: product.price,
-      images: [product.image],
+      images: product.images,
       description: product.description || "",
       category: product.category || "Uncategorized",
       stock: availableStock,
@@ -192,7 +193,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           >
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-900 border border-white/10 shadow-2xl">
               <Image
-                src={imgSrc || product.image}
+                src={imgSrc || product.images[0]}
                 alt={product.title}
                 fill
                 className="object-cover"
@@ -402,7 +403,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
             <h2 className="text-3xl font-bold text-white mb-8">Similar Products</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {relatedProducts.map((prod) => (
-                <ProductCard key={prod.id} {...prod} />
+                <ProductCard key={prod.id} {...prod} image={prod.images[0]} />
               ))}
             </div>
           </div>

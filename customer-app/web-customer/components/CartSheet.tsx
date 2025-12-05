@@ -1,8 +1,8 @@
 "use client";
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useCartStore } from "@/store/useCartStore";
-import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/ui/sheet";
+import { useCartStore } from "@/features/cart/store/useCartStore";
+import { Button } from "@/shared/ui/button";
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +22,7 @@ export function CartSheet() {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <button className="relative text-gray-300 hover:text-white transition-colors">
+                <button aria-label="Open cart" className="relative text-gray-300 hover:text-white transition-colors">
                     <ShoppingCart className="h-5 w-5" />
                     {items.length > 0 && (
                         <span className="absolute -top-2 -right-2 bg-white text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
@@ -89,6 +89,7 @@ export function CartSheet() {
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.size || "", item.quantity + 1)}
                                                 className="p-1 hover:bg-white/10 transition-colors"
+                                                disabled={item.quantity >= 10}
                                             >
                                                 <Plus className="h-3 w-3" />
                                             </button>

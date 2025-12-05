@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAdminDb, getAdminAuth } from '@/utils/firebaseAdmin';
+import { getAdminDb, getAdminAuth } from '@/shared/infrastructure/firebaseAdmin';
 import { handleApiError } from '@/lib/api-error-handler';
 import { UnauthorizedError } from '@/lib/errors';
 import { validateOrderRequest, type OrderRequest } from '@/lib/order-validation';

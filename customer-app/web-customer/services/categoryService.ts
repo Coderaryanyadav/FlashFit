@@ -1,5 +1,5 @@
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
-import { db } from "@/utils/firebase";
+import { db } from "@/shared/infrastructure/firebase";
 
 export interface Category {
     id: string;

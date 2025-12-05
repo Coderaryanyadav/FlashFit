@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/utils/firebase";
+import { db } from "@/shared/infrastructure/firebase";
 import { CheckCircle2, Package, Truck, MapPin, ChevronLeft, ShoppingBag, CreditCard, Clock, AlertTriangle, Star, XCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { EnhancedTrackingMap } from "@/components/EnhancedTrackingMap";
 import { Order } from "@/services/orderService";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/shared/ui/dialog";
 import { runTransaction } from "firebase/firestore";
 
 const STEPS = [

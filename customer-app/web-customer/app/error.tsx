@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/ui/button';
+import { AlertTriangle } from 'lucide-react';
 
 export default function Error({
     error,
@@ -11,32 +12,47 @@ export default function Error({
     reset: () => void;
 }) {
     useEffect(() => {
-        console.error('Application error:', error);
+        // Log the error to an error reporting service
+        console.error('Application Error:', error);
     }, [error]);
 
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-            <div className="max-w-md text-center">
-                <h1 className="text-6xl font-bold mb-4">Oops!</h1>
-                <h2 className="text-2xl mb-4">Something went wrong</h2>
-                <p className="text-gray-400 mb-8">
-                    We&apos;re sorry for the inconvenience. Our team has been notified.
-                </p>
-                <div className="space-y-4">
-                    <Button onClick={reset} className="w-full">
-                        Try Again
+        <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
+            <div className="bg-zinc-900 p-8 rounded-2xl border border-white/10 max-w-md w-full space-y-6 shadow-2xl">
+                <div className="flex justify-center">
+                    <div className="h-16 w-16 bg-red-500/10 rounded-full flex items-center justify-center">
+                        <AlertTriangle className="h-8 w-8 text-red-500" />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-black tracking-tight">Something went wrong!</h2>
+                    <p className="text-gray-400">
+                        We apologize for the inconvenience. An unexpected error has occurred.
+                    </p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                    <Button
+                        onClick={reset}
+                        className="w-full bg-white text-black hover:bg-gray-200 font-bold"
+                    >
+                        Try again
                     </Button>
-                    <Button onClick={() => window.location.href = '/'} variant="outline" className="w-full">
-                        Go Home
+                    <Button
+                        variant="outline"
+                        onClick={() => window.location.href = '/'}
+                        className="w-full border-white/10 hover:bg-white/5"
+                    >
+                        Go back home
                     </Button>
                 </div>
+
                 {process.env.NODE_ENV === 'development' && (
-                    <details className="mt-8 text-left">
-                        <summary className="cursor-pointer text-sm text-gray-500">Error Details</summary>
-                        <pre className="mt-2 text-xs bg-zinc-900 p-4 rounded overflow-auto">
-                            {error.message}
-                        </pre>
-                    </details>
+                    <div className="mt-4 p-4 bg-black/50 rounded text-left overflow-auto max-h-40 text-xs font-mono text-red-400">
+                        {error.message}
+                        {error.digest && <div className="mt-1 text-gray-500">Digest: {error.digest}</div>}
+                    </div>
                 )}
             </div>
         </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { Review, ReviewService } from "@/services/reviewService";
-import { auth } from "@/utils/firebase";
+import { auth } from "@/shared/infrastructure/firebase";
 
 interface ProductReviewsProps {
     productId: string;
@@ -28,7 +28,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
             if (u) {
                 try {
                     const { doc, getDoc } = await import("firebase/firestore");
-                    const { db } = await import("@/utils/firebase");
+                    const { db } = await import("@/shared/infrastructure/firebase");
                     const userDoc = await getDoc(doc(db, "users", u.uid));
                     if (userDoc.exists() && userDoc.data().role === "admin") {
                         setIsAdmin(true);

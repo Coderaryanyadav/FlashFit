@@ -3,11 +3,11 @@
 import { useState, useEffect, Suspense } from "react";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/utils/firebase";
+import { auth, db } from "@/shared/infrastructure/firebase";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { Loader2, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 

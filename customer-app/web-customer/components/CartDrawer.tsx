@@ -1,7 +1,7 @@
 "use client";
 
 import { ShoppingBag, X, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
     Sheet,
     SheetContent,
@@ -10,13 +10,13 @@ import {
     SheetTrigger,
     SheetFooter,
     SheetClose,
-} from "@/components/ui/sheet";
-import { useCartStore } from "@/store/useCartStore";
+} from "@/shared/ui/sheet";
+import { useCartStore } from "@/features/cart/store/useCartStore";
 import Image from "next/image";
 import Link from "next/link";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/useAuth";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { Separator } from "@/shared/ui/separator";
+import { useAuth } from "@/shared/hooks/useAuth";
 
 export function CartDrawer() {
     const { user } = useAuth();

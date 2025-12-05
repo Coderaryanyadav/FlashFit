@@ -3,11 +3,11 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { collection, query, getDocs } from "firebase/firestore";
-import { db } from "@/utils/firebase";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { db } from "@/shared/infrastructure/firebase";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 import { Search, Loader2, ShoppingBag } from "lucide-react";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/features/products/ui/ProductCard";
 import { Header } from "@/components/Header";
 
 function SearchContent() {

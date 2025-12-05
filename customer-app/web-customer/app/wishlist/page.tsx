@@ -2,10 +2,10 @@
 
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { Header } from "@/components/Header";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/features/products/ui/ProductCard";
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 export default function WishlistPage() {
     const { items } = useWishlistStore();

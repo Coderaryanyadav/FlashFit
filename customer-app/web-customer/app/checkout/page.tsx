@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCartStore } from "@/store/useCartStore";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+import { useCartStore } from "@/features/cart/store/useCartStore";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import { Separator } from "@/shared/ui/separator";
 import { MapPin, CheckCircle2, Truck, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { db, auth } from "@/utils/firebase";
+import { db, auth } from "@/shared/infrastructure/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Header } from "@/components/Header";
 import { OrderService } from "@/services/orderService";

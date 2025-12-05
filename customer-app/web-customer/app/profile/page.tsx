@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/utils/firebase";
+import { auth } from "@/shared/infrastructure/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Package, Heart, MapPin, LogOut, User, Settings, HelpCircle, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";

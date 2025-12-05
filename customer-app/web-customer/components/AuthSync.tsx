@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/utils/firebase";
+import { auth, db } from "@/shared/infrastructure/firebase";
 
 export function AuthSync() {
     useEffect(() => {

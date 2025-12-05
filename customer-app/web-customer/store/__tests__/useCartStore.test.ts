@@ -1,4 +1,4 @@
-import { useCartStore } from '../useCartStore';
+import { useCartStore } from '@/features/cart/store/useCartStore';
 
 describe('Cart Store', () => {
     beforeEach(() => {
@@ -13,7 +13,11 @@ describe('Cart Store', () => {
                 price: 100,
                 category: 'Test',
                 image: 'test.jpg',
-                stock: 10
+                stock: 10,
+                description: 'Test Description',
+                images: ['test.jpg'],
+                storeId: 'store_1',
+                isActive: true
             };
 
             useCartStore.getState().addItem(product);
@@ -31,7 +35,11 @@ describe('Cart Store', () => {
                 price: 100,
                 category: 'Test',
                 image: 'test.jpg',
-                stock: 10
+                stock: 10,
+                description: 'Test Description',
+                images: ['test.jpg'],
+                storeId: 'store_1',
+                isActive: true
             };
 
             useCartStore.getState().addItem(product);
@@ -49,7 +57,11 @@ describe('Cart Store', () => {
                 price: 100,
                 category: 'Test',
                 image: 'test.jpg',
-                stock: 100
+                stock: 100,
+                description: 'Test Description',
+                images: ['test.jpg'],
+                storeId: 'store_1',
+                isActive: true
             };
 
             useCartStore.getState().addItem(product, '', 50);
@@ -68,7 +80,11 @@ describe('Cart Store', () => {
                 price: 100,
                 category: 'Test',
                 image: 'test.jpg',
-                stock: 10
+                stock: 10,
+                description: 'Test Description',
+                images: ['test.jpg'],
+                storeId: 'store_1',
+                isActive: true
             };
 
             const product2 = {
@@ -77,7 +93,11 @@ describe('Cart Store', () => {
                 price: 200,
                 category: 'Test',
                 image: 'test.jpg',
-                stock: 10
+                stock: 10,
+                description: 'Test Description',
+                images: ['test.jpg'],
+                storeId: 'store_1',
+                isActive: true
             };
 
             useCartStore.getState().addItem(product1, '', 2);
@@ -96,7 +116,11 @@ describe('Cart Store', () => {
                 price: 100,
                 category: 'Test',
                 image: 'test.jpg',
-                stock: 10
+                stock: 10,
+                description: 'Test Description',
+                images: ['test.jpg'],
+                storeId: 'store_1',
+                isActive: true
             };
 
             useCartStore.getState().addItem(product);

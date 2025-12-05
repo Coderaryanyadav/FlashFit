@@ -11,7 +11,7 @@ import {
     serverTimestamp,
     limit
 } from "firebase/firestore";
-import { db } from "@/utils/firebase";
+import { db } from "@/shared/infrastructure/firebase";
 
 export interface OrderItem {
     id: string;
@@ -45,7 +45,7 @@ export const OrderService = {
     // Create a new order via Cloud Function
     createOrder: async (orderData: any) => {
         try {
-            const { auth } = await import("@/utils/firebase");
+            const { auth } = await import("@/shared/infrastructure/firebase");
             const token = await auth.currentUser?.getIdToken();
 
             if (!token) throw new Error("User not authenticated");

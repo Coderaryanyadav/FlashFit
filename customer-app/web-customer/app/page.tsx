@@ -2,19 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db, auth } from "@/utils/firebase";
+import { db, auth } from "@/shared/infrastructure/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/features/products/ui/ProductCard";
 import { MapPin, ArrowRight, Zap, Clock, Package } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import Link from "next/link";
 import Image from "next/image";
 import { CategoryService, Category } from "@/services/categoryService";
-import { ProductService } from "@/services/productService";
-import { ProductSkeleton } from "@/components/ProductSkeleton";
+import { ProductService } from "@/features/products/services/productService";
+import { ProductSkeleton } from "@/features/products/ui/ProductSkeleton";
 import dynamic from "next/dynamic";
+import { useAuth } from "@/shared/hooks/useAuth";
 
 const LoginModal = dynamic(() => import("@/components/LoginModal").then(mod => mod.LoginModal), { ssr: false });
 const Marquee = dynamic(() => import("@/components/Marquee").then(mod => mod.Marquee), { ssr: false });
@@ -31,13 +32,10 @@ export default function HomePage() {
   const [showPincodeModal, setShowPincodeModal] = useState(false);
   const [pincodeError, setPincodeError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState<any>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
-    return () => unsub();
-  }, []);
+  // Use the custom hook
+  const { user } = useAuth();
 
   // Consolidate all data fetching into one robust effect
   useEffect(() => {

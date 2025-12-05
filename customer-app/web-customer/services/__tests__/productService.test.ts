@@ -1,7 +1,7 @@
-import { ProductService } from '../productService';
+import { ProductService } from '@/features/products/services/productService';
 
 // Mock Firebase
-jest.mock('@/utils/firebase', () => ({
+jest.mock('@/shared/infrastructure/firebase', () => ({
     db: {},
     auth: {}
 }));

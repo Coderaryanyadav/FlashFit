@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "@/utils/firebase";
+import { db, auth } from "@/shared/infrastructure/firebase";
 import { Star, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/shared/ui/button";
+import { Textarea } from "@/shared/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
 
 interface Review {

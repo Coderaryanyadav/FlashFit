@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { MapPin, Navigation, Package, Clock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/shared/ui/card";
 
 interface Location {
     lat: number;

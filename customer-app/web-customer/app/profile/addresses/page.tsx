@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Plus, MapPin, Trash2, Home, Briefcase, ArrowLeft } from "lucide-react";
-import { auth, db } from "@/utils/firebase";
+import { auth, db } from "@/shared/infrastructure/firebase";
 import { doc, getDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
 

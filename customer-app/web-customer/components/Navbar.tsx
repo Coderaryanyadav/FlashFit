@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { ShoppingBag, Search, MapPin, Menu } from "lucide-react";
 import { CartDrawer } from "./CartDrawer";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 
 export function Navbar() {
     return (

@@ -2,8 +2,8 @@
 
 import { Header } from "@/components/Header";
 import { Mail, Phone, MessageCircle, ChevronDown } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion";
+import { Button } from "@/shared/ui/button";
 
 export default function HelpPage() {
     return (

@@ -1,5 +1,5 @@
 // Mock Firebase completely to avoid auth issues
-jest.mock('@/utils/firebase', () => ({
+jest.mock('@/shared/infrastructure/firebase', () => ({
     db: {},
     auth: {
         currentUser: null,

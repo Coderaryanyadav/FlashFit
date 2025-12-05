@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
-import { db } from "@/utils/firebase";
+import { db } from "@/shared/infrastructure/firebase";
 
 interface SearchResult {
     id: string;

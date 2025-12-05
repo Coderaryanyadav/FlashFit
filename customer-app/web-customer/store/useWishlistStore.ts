@@ -1,7 +1,7 @@
 // store/useWishlistStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { auth, db } from '@/utils/firebase';
+import { auth, db } from '@/shared/infrastructure/firebase';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 

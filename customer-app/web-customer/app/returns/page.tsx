@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { ArrowRight, RefreshCw, AlertTriangle } from "lucide-react";
 
 export default function ReturnsPage() {

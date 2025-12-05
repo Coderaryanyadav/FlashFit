@@ -22,6 +22,20 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c;
 }
 
+/**
+ * Finds the nearest available driver for a delivery.
+ * 
+ * Algorithm:
+ * 1. Queries available and online drivers from Firestore.
+ * 2. Filters out drivers who are at max capacity (>= 3 orders).
+ * 3. Calculates Haversine distance to the delivery location.
+ * 4. Returns the closest driver within 10km radius.
+ * 
+ * @param db - Firestore instance.
+ * @param deliveryLat - Latitude of the delivery location.
+ * @param deliveryLng - Longitude of the delivery location.
+ * @returns {Promise<string | null>} The ID of the nearest driver, or null if none found.
+ */
 export async function findNearestDriver(
     db: Firestore,
     deliveryLat: number,

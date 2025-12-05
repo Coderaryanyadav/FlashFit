@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { auth } from "@/utils/firebase";
+import { auth } from "@/shared/infrastructure/firebase";
 import { signOut } from "firebase/auth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

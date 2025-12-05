@@ -74,7 +74,7 @@ export const useCartStore = create<CartStore>()(
 
                 try {
                     const { query, collection, where, documentId, getDocs } = await import("firebase/firestore");
-                    const { db } = await import("@/utils/firebase");
+                    const { db } = await import("@/shared/infrastructure/firebase");
                     const { toast } = await import("sonner");
 
                     const updatedItems = [...items];
@@ -127,7 +127,7 @@ export const useCartStore = create<CartStore>()(
                 if (!userId) return;
                 try {
                     const { doc, getDoc, setDoc } = await import("firebase/firestore");
-                    const { db } = await import("@/utils/firebase");
+                    const { db } = await import("@/shared/infrastructure/firebase");
 
                     const cartRef = doc(db, "users", userId, "cart", "default");
                     const cartSnap = await getDoc(cartRef);

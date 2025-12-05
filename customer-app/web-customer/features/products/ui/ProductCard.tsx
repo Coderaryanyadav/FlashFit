@@ -5,11 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus, Heart, HeartOff, CheckCircle2 } from "lucide-react";
 import { useWishlistStore } from "@/store/useWishlistStore";
-import { Button } from "./ui/button";
-import { useCartStore } from "@/store/useCartStore";
+import { Button } from "@/shared/ui/button";
+import { useCartStore } from "@/features/cart/store/useCartStore";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Confetti } from "./Confetti";
+import { Confetti } from "@/components/Confetti";
 import { formatCurrency } from "@/utils/format";
 
 interface ProductCardProps {

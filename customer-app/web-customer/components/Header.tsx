@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, User, ShoppingCart, Heart, Menu, X, Package, HelpCircle } from "lucide-react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { useCartStore } from "@/store/useCartStore";
+import { Input } from "@/shared/ui/input";
+import { useCartStore } from "@/features/cart/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
-import { auth } from "@/utils/firebase";
+import { auth } from "@/shared/infrastructure/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { cn } from "@/lib/utils";
 import { SmartSearch } from "@/components/SmartSearch";

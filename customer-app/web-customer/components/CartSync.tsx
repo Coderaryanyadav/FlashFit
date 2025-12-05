@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useCartStore } from "@/store/useCartStore";
-import { auth, db } from "@/utils/firebase";
+import { useCartStore } from "@/features/cart/store/useCartStore";
+import { auth, db } from "@/shared/infrastructure/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export function CartSync() {
     const { items, setItems, clearCart } = useCartStore();
     const hasInitialized = useRef(false);
+    const itemsRef = useRef(items);
+
+    // Keep ref synced with current items to use in callbacks without dependency loop
+    useEffect(() => {
+        itemsRef.current = items;
+    }, [items]);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -19,54 +25,46 @@ export function CartSync() {
 
                 if (cartSnap.exists()) {
                     const savedCart = cartSnap.data().items;
+                    const localItems = itemsRef.current; // Use ref to avoid dependency loop
 
-                    // Merge strategy: 
-                    // If local cart has items, merge them with saved cart (local takes precedence or adds to it)
-                    // For simplicity here, we'll just load the saved cart if local is empty, 
-                    // or merge if both exist.
-
-                    if (items.length > 0 && !hasInitialized.current) {
-                        // Merge logic could be complex. For now, let's just save local to DB
-                        // effectively overwriting DB with current session if we have items.
-                        // Or we could append.
-                        // Let's try to merge:
+                    if (localItems.length > 0 && !hasInitialized.current) {
+                        // Merge strategies:
+                        // 1. If item exists in both, add quantities
+                        // 2. If item only in local, add to saved
                         const mergedItems = [...savedCart];
-                        items.forEach(localItem => {
-                            const existing = mergedItems.find(i => i.id === localItem.id && i.size === localItem.size);
-                            if (existing) {
-                                existing.quantity += localItem.quantity;
+
+                        localItems.forEach(localItem => {
+                            const existingIndex = mergedItems.findIndex(i => i.id === localItem.id && i.size === localItem.size);
+                            if (existingIndex > -1) {
+                                mergedItems[existingIndex].quantity += localItem.quantity;
                             } else {
                                 mergedItems.push(localItem);
                             }
                         });
 
-                        // Update DB and Local
+                        // Prioritize preserving user's local cart additions + saved cart
                         await setDoc(cartRef, { items: mergedItems }, { merge: true });
                         setItems(mergedItems);
                     } else if (!hasInitialized.current) {
-                        // Local empty, load from DB
+                        // If local empty, just load saved
                         setItems(savedCart);
                     }
-                } else if (items.length > 0 && !hasInitialized.current) {
-                    // No saved cart, but local items exist -> Save to DB
-                    await setDoc(cartRef, { items }, { merge: true });
+                } else if (itemsRef.current.length > 0 && !hasInitialized.current) {
+                    // No saved cart but have local items -> save them
+                    await setDoc(cartRef, { items: itemsRef.current }, { merge: true });
                 }
                 hasInitialized.current = true;
             } else {
                 // User logged out
-                // Optionally clear cart or keep it as guest cart
-                // Usually we keep it so they can continue shopping as guest
-                // But if they were logged in, 'items' currently reflects their user cart.
-                // We might want to clear it to avoid showing user items to guest.
                 clearCart();
                 hasInitialized.current = false;
             }
         });
 
         return () => unsubscribe();
-    }, [items, setItems, clearCart]);
+    }, [setItems, clearCart]); // IMPORTANT: removed 'items' from dependency to prevent infinite loop
 
-    // Sync changes to DB when items change (if logged in)
+    // Sync changes to DB when items change (only if logged in)
     useEffect(() => {
         const user = auth.currentUser;
         if (user && items.length > 0) {
@@ -74,7 +72,7 @@ export function CartSync() {
                 const cartRef = doc(db, "carts", user.uid);
                 await setDoc(cartRef, { items }, { merge: true });
             };
-            // Debounce could be good here
+            // Debounce
             const timeout = setTimeout(saveCart, 1000);
             return () => clearTimeout(timeout);
         }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Search, Sparkles, TrendingUp, Clock, ArrowRight, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 

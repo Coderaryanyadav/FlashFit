@@ -1,7 +1,7 @@
 "use client";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/shared/ui/sonner";
 import { LoginModal } from "@/components/LoginModal";
 import { useUIStore } from "@/store/useUIStore";
 

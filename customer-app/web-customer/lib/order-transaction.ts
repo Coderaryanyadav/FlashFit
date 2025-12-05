@@ -4,6 +4,22 @@ import type { OrderRequest } from './order-validation';
 
 const TRANSACTION_TIMEOUT = 25000; // 25 seconds
 
+/**
+ * Executes a complex order creation transaction in Firestore.
+ * 
+ * This function performs the following atomically:
+ * 1. Reads current product data to ensure freshness.
+ * 2. Validates stock availability and price consistency (Zero Tolerance).
+ * 3. Creates the order document.
+ * 4. Decrements product stock.
+ * 
+ * @param db - The Firestore admin instance.
+ * @param orderData - The validated order request data.
+ * @param userId - The ID of the user placing the order.
+ * @returns {Promise<string>} The ID of the created order.
+ * @throws {StockError} If any item is out of stock.
+ * @throws {Error} If price mismatch or other validation fails.
+ */
 export async function executeOrderTransaction(
     db: Firestore,
     orderData: OrderRequest,

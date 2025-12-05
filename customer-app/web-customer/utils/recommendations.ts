@@ -1,7 +1,7 @@
 // Product recommendation engine
 
 import { collection, query, where, getDocs, limit, orderBy } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "@/shared/infrastructure/firebase";
 
 interface Product {
     id: string;

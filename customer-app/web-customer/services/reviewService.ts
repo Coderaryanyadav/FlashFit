@@ -1,4 +1,4 @@
-import { db } from "@/utils/firebase";
+import { db } from "@/shared/infrastructure/firebase";
 import {
     collection,
     addDoc,

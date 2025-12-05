@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { ArrowLeft, Bell, Lock, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/shared/ui/switch";
 
 export default function SettingsPage() {
     const [notifications, setNotifications] = useState(true);

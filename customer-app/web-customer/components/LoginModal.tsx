@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/utils/firebase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { auth, db } from "@/shared/infrastructure/firebase";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -56,7 +56,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 toast.success("Welcome back!");
 
                 // Sync cart
-                const { useCartStore } = await import("@/store/useCartStore");
+                const { useCartStore } = await import("@/features/cart/store/useCartStore");
                 useCartStore.getState().syncCart(userCredential.user.uid);
             } else {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);

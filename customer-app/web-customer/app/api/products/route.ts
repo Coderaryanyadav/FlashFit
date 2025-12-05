@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminDb } from "@/utils/firebaseAdmin";
+import { getAdminDb } from "@/shared/infrastructure/firebaseAdmin";
 import { handleApiError } from "@/lib/api-error-handler";
 
 export const dynamic = 'force-dynamic';

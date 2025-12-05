@@ -1,17 +1,17 @@
 "use client";
 
-import { useCartStore } from "@/store/useCartStore";
+import { useCartStore } from "@/features/cart/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import Image from "next/image";
 import { Header } from "@/components/Header";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 
 export default function CartPage() {
   const { user } = useAuth();

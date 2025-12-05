@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, User, ShoppingCart, Heart, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useCartStore } from "@/store/useCartStore";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { useCartStore } from "@/features/cart/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
-import { auth } from "@/utils/firebase";
+import { auth } from "@/shared/infrastructure/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 const SEARCH_SUGGESTIONS = [

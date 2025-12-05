@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ProductService, Product } from "@/services/productService";
+import { ProductService } from "@/features/products/services/productService";
+import { Product } from "@flashfit/types";
 import { CategoryService, Category } from "@/services/categoryService";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/features/products/ui/ProductCard";
 import { LoginModal } from "@/components/LoginModal";
-import { Slider } from "@/components/ui/slider";
+import { Slider } from "@/shared/ui/slider";
 import { ChevronRight, SlidersHorizontal, X, Filter, ArrowUpDown, Star } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ProductSkeleton } from "@/components/ProductSkeleton";
+import { ProductSkeleton } from "@/features/products/ui/ProductSkeleton";
 
 // Force rebuild
 
@@ -308,7 +309,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         ) : filteredProducts.length > 0 ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                                 {filteredProducts.map((product) => (
-                                    <ProductCard key={product.id} {...product} />
+                                    <ProductCard key={product.id} {...product} image={product.images[0]} />
                                 ))}
                             </div>
                         ) : (

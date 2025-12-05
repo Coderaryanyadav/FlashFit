@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, ShoppingBag, Heart, User } from "lucide-react";
-import { useCartStore } from "@/store/useCartStore";
+import { useCartStore } from "@/features/cart/store/useCartStore";
 
 export function MobileNav() {
     const pathname = usePathname();

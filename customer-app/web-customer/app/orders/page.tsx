@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/utils/firebase";
+import { auth } from "@/shared/infrastructure/firebase";
 import { OrderService, Order } from "@/services/orderService";
 import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Package, ChevronRight, Clock, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
 import Image from "next/image";

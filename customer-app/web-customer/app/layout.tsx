@@ -13,49 +13,34 @@ import React from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://flashfit.in"), // Replace with actual domain
-  title: {
-    default: "FlashFit | 60 Min Clothes Delivered",
-    template: "%s | FlashFit"
-  },
+  title: "FlashFit | 60 Min Clothes Delivered",
   description: "Get premium clothes delivered in 60 minutes. Shop the best sports gear, activewear, and fitness equipment. Fast delivery, easy returns.",
+  manifest: "/manifest.json",
   keywords: ["sports", "fitness", "activewear", "gym gear", "running shoes", "flashfit", "decathlon alternative", "india sports"],
   authors: [{ name: "FlashFit Team" }],
   creator: "FlashFit",
   openGraph: {
-    title: "FlashFit | Premium Sports & Fitness Gear",
-    description: "Discover our new collection of high-performance gear designed for every athlete.",
+    type: "website",
+    locale: "en_IN",
     url: "https://flashfit.in",
     siteName: "FlashFit",
+    title: "FlashFit | Premium Sports & Fitness Gear",
+    description: "Discover our new collection of high-performance gear designed for every athlete.",
     images: [
       {
-        url: "/og-image.jpg", // Ensure this image exists in public folder
+        url: "https://flashfit.in/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "FlashFit - Ready to Play",
       },
     ],
-    locale: "en_IN",
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "FlashFit | Premium Sports & Fitness Gear",
     description: "Shop the best sports gear, activewear, and fitness equipment.",
-    images: ["/og-image.jpg"], // Same as OG image
+    images: ["https://flashfit.in/og-image.jpg"],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",
@@ -67,7 +52,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <body className={inter.className}>
