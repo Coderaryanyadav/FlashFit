@@ -30,7 +30,7 @@ Set these EXACT values:
 | **Build Command** | *(leave default or use `npm run build`)* |
 | **Output Directory** | *(leave default `.next`)* |
 | **Install Command** | *(leave default `npm install`)* |
-| **Node Version** | `18.x` |
+| **Node Version** | `24.x` |
 
 **IMPORTANT:** The `vercel.json` file in `customer-app/web-customer` will handle the monorepo build automatically.
 
