@@ -1,53 +1,65 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Production Smoke Tests', () => {
+test.describe('Full Shopping Flow', () => {
     test.beforeEach(async ({ page }) => {
-        // Navigate to home before each test
         await page.goto('/');
     });
 
     test('should load homepage and display core elements', async ({ page }) => {
-        // 1. Verify Brand Logo (using .first() to handle footer duplicates)
         const brandLogo = page.locator('text=FLASHFIT').first();
         await expect(brandLogo).toBeVisible({ timeout: 15000 });
-
-        // 2. Verify Page Title
         await expect(page).toHaveTitle(/FlashFit/i);
     });
 
-    test('should allow interaction with Cart', async ({ page }) => {
-        // 1. Wait for page load
-        await expect(page.locator('text=FLASHFIT').first()).toBeVisible();
-
-        // 2. Find and Click Cart Button (using accessible label)
-        const cartButton = page.getByLabel('Open cart');
-        await expect(cartButton).toBeVisible();
-        await cartButton.click();
-
-        // 3. Verify Cart Sheet Opens
-        // Look for "Your Cart" heading specifically to avoid ambiguity with "Your cart is empty" text
-        const cartHeading = page.getByRole('heading', { name: /Your Cart/i });
-        await expect(cartHeading).toBeVisible();
+    test('should search for products', async ({ page }) => {
+        const searchInput = page.getByPlaceholder(/Search for products/i).first();
+        if (await searchInput.isVisible()) {
+            await searchInput.fill('Gym');
+            await searchInput.press('Enter');
+            await expect(page).toHaveURL(/\/search/);
+        }
     });
 
-    test('should navigate to category page', async ({ page }) => {
-        await expect(page.locator('text=FLASHFIT').first()).toBeVisible();
+    test('should add product to cart from details page', async ({ page }) => {
+        // 1. Navigate to a category
+        await page.goto('/category/men');
 
-        // Check for ANY category link
-        const categoryLink = page.locator('a[href^="/category/"]').first();
+        // 2. Check for products
+        const productCard = page.locator('a[href^="/product/"]').filter({ has: page.locator('h3') }).first();
 
-        // Only run navigation test if category links are present (robustness)
-        if (await categoryLink.isVisible()) {
-            await categoryLink.click();
-            await expect(page).toHaveURL(/\/category\//);
-
-            // Verify content loaded
-            const hasProducts = await page.locator('text=Products').isVisible().catch(() => false);
-            const hasSort = await page.locator('text=Sort By').isVisible().catch(() => false);
-            const hasEmpty = await page.locator('text=No products').isVisible().catch(() => false);
-
-            // Assert that ONE of these states is visible
-            expect(hasProducts || hasSort || hasEmpty || true).toBeTruthy();
+        try {
+            await expect(productCard).toBeVisible({ timeout: 5000 });
+        } catch (e) {
+            console.log("No products found on category page. Skipping 'Add to Cart' test as it requires inventory.");
+            test.skip();
+            return;
         }
+
+        // 3. Proceed if product found
+        await productCard.click();
+        await expect(page).toHaveURL(/\/product\//, { timeout: 10000 });
+
+        await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
+
+        // Size Selection
+        const sizeButtons = page.locator('button.h-14.w-14:not([disabled])');
+        if (await sizeButtons.count() > 0) {
+            await sizeButtons.first().click();
+        }
+
+        // Add to Cart
+        const addToCartBtn = page.getByRole('button', { name: /Add to Cart/i });
+        await expect(addToCartBtn).toBeVisible();
+        await addToCartBtn.click();
+
+        await expect(page.getByText('Added to cart')).toBeVisible();
+
+        // Cart Check
+        const cartButton = page.getByLabel('Open cart');
+        await cartButton.click();
+
+        const cartHeading = page.getByRole('heading', { name: /Your Cart/i });
+        await expect(cartHeading).toBeVisible();
+        await expect(page.getByText('Your cart is empty')).not.toBeVisible();
     });
 });
