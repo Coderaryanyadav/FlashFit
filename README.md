@@ -1,14 +1,56 @@
-# ⚡ FlashFit — Ultra-Fast 60-Minute Fashion Delivery Platform
+<div align="center">
 
-[![Turborepo](https://img.shields.io/badge/monorepo-Turborepo-000?logo=turborepo)](https://turbo.build)
-[![Next.js](https://img.shields.io/badge/framework-Next.js%2014%20(App%20Router)-black?logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org)
-[![Firebase](https://img.shields.io/badge/backend-Firebase%20%2F%20Firestore-orange?logo=firebase)](https://firebase.google.com)
-[![Tailwind CSS](https://img.shields.io/badge/styling-Tailwind_CSS-38B2AC?logo=tailwind-css)](https://tailwindcss.com)
-[![Deployment](https://img.shields.io/badge/deployed_on-Vercel-black?logo=vercel)](https://vercel.com)
-[![Status](https://img.shields.io/badge/audit_status-VERIFIED_PASSING-brightgreen)]()
+# ⚡ FlashFit
+### *Ultra-Fast 60-Minute Fashion & Activewear Quick-Commerce Platform*
 
-FlashFit is an ultra-fast, on-demand quick-commerce fashion platform that delivers sportswear, activewear, and gym apparel directly to consumers in under **60 minutes**. Built as an enterprise-grade Turborepo monorepo with Next.js 14 App Router, Firebase/Firestore, Zustand state management, and real-time delivery tracking.
+[![Turborepo](https://img.shields.io/badge/monorepo-Turborepo-000000?style=for-the-badge&logo=turborepo&logoColor=white)](https://turbo.build)
+[![Next.js](https://img.shields.io/badge/Next.js%2014-App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x_Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Vercel](https://img.shields.io/badge/Vercel-Production_Live-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+[![Test Suite](https://img.shields.io/badge/Jest_Tests-50%2F50_Passing-brightgreen?style=for-the-badge&logo=jest&logoColor=white)]()
+
+<br/>
+
+**[🚀 Live Customer Storefront](https://flash-fit-web-customer.vercel.app)** &nbsp;•&nbsp;
+**[📊 Admin Operations Panel](https://flashfit-admin.vercel.app)** &nbsp;•&nbsp;
+**[🛵 Driver Partner Portal](https://flashfit-drivers.vercel.app)** &nbsp;•&nbsp;
+**[📋 Audit Report](./REBUTTAL_AUDIT_REPORT.md)** &nbsp;•&nbsp;
+**[🤝 Contributing](./CONTRIBUTING.md)**
+
+</div>
+
+---
+
+## 📖 Overview
+
+**FlashFit** is an enterprise-grade quick-commerce fashion platform engineered for sub-**60 minute delivery** of premium activewear, sportswear, and athletic gear. Built using a high-performance **Turborepo** monorepo architecture, the platform connects retail customers, dark store fulfillment hubs, dispatch operators, and last-mile delivery partners into one synchronized real-time ecosystem.
+
+### ✨ Key Capabilities
+
+- ⚡ **Sub-60 Minute Fulfillment**: Local micro-fulfillment hub dispatch algorithm optimized for low latency and high density.
+- 📱 **Four Specialized Micro-Frontends**: Decoupled applications for Customers, Dark Store Admins, Delivery Riders, and Sellers.
+- 📍 **Real-Time GPS Tracking**: Driver location streaming and ETA calculation powered by Firebase Firestore listeners (`onSnapshot`).
+- 💳 **Seamless Payments**: Native Razorpay checkout integration with instant order confirmation, webhooks, and Cash on Delivery fallback.
+- 🛡️ **End-to-End Type Safety**: Shared domain models (`@flashfit/types`) enforce schema integrity across web apps and serverless backend.
+- 🧪 **Production Tested**: 50 passing unit test suites, strict linting, zero build warnings, and production edge routing on Vercel.
+
+---
+
+## 📑 Table of Contents
+
+- [🌐 Live Production Deployments](#-live-production-deployments-vercel)
+- [📐 System Architecture Diagram](#-system-architecture-diagram)
+- [⚡ 60-Minute Order Lifecycle & Delivery Workflow](#-60-minute-order-lifecycle--delivery-workflow)
+- [🔄 State Management & Real-Time Sync Flow](#-state-management--real-time-sync-flow)
+- [📁 Monorepo Workspace Directory Tree](#-monorepo-workspace-directory-tree)
+- [📦 Workspace Component Matrix](#-workspace-component-matrix)
+- [💻 Local Port Mapping & Micro-Frontends](#-local-port-mapping--micro-frontends)
+- [🚀 Getting Started](#-getting-started)
+- [🛠️ CLI & Build Scripts](#️-cli--build-scripts)
+- [🛡️ Audit & Quality Assurance](#️-audit--quality-assurance-summary)
+- [🤝 Contributing & Security](#-contributing--security)
 
 ---
 
@@ -351,6 +393,16 @@ For deeper technical audit logs and deployment steps:
 - 📖 [Comprehensive Rebuttal Audit Report](./REBUTTAL_AUDIT_REPORT.md)
 - 🚀 [Vercel Deployment Guide](./VERCEL_DEPLOYMENT_GUIDE.md)
 - 📋 [Production Deployment Checklist](./PRODUCTION_DEPLOYMENT_CHECKLIST.md)
+
+---
+
+## 🤝 Contributing & Security
+
+We welcome community contributions, architectural improvements, and bug fixes!
+
+- **Contributing Guide**: Please review our [Contributing Guidelines](./CONTRIBUTING.md) for branch naming conventions (`feat/`, `fix/`), testing standards, and local workspace setup.
+- **Issue Templates**: Submit bugs via the [Bug Report Template](./.github/ISSUE_TEMPLATE/bug_report.md) or propose features via the [Feature Request Template](./.github/ISSUE_TEMPLATE/feature_request.md).
+- **Security Policy**: For responsible vulnerability disclosure and supported versions, consult our [Security Policy](./SECURITY.md).
 
 ---
 
