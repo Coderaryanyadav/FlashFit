@@ -11,6 +11,8 @@ build
 out
 .vercel
 *.tsbuildinfo
+playwright-report/
+test-results/
 
 # Environment variables
 .env
@@ -67,6 +69,9 @@ tmp
 *GUIDE*.md
 *PATTERN*.md
 !REBUTTAL_AUDIT_REPORT.md
+!VERCEL_DEPLOYMENT_GUIDE.md
+!VERCEL_SETUP_COMPLETE.md
+!PRODUCTION_DEPLOYMENT_CHECKLIST.md
 instructions.md
 backend/docs/
 admin-dashboard/web-admin/SYSTEM_AUDIT.md
