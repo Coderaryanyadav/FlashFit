@@ -84,9 +84,9 @@ All 4 web applications were tested live via active HTTP requests:
 ## 5. Deployment Information
 
 ### Vercel Live Deployment URLs
-- **Customer Web App:** [https://flash-fit-web-customer.vercel.app](https://flash-fit-web-customer.vercel.app)
-- **Admin Dashboard:** [https://flashfit-admin.vercel.app](https://flashfit-admin.vercel.app)
-- **Driver Web App:** [https://flashfit-drivers.vercel.app](https://flashfit-drivers.vercel.app)
+- **Customer Web App:** [https://flashfit-customer-web.vercel.app](https://flashfit-customer-web.vercel.app) (Verified Live HTTP 200, Firestore APIs responding)
+- **Admin Dashboard:** [https://flashfit-admin.vercel.app](https://flashfit-admin.vercel.app) (Verified Live HTTP 200)
+- **Driver Web App:** [https://flashfit-driver-web.vercel.app](https://flashfit-driver-web.vercel.app) (Verified Live HTTP 200)
 
 *Note: Automated deployment is bound to the `main` branch via the Vercel GitHub integration.*
 

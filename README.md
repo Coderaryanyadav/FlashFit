@@ -12,11 +12,11 @@ FlashFit is an ultra-fast, modern e-commerce platform offering 60-minute apparel
 
 ## 🌐 Live Deployments (Vercel)
 
-| Application | Role | Production URL |
-|---|---|---|
-| **Customer App** | Storefront, product catalog, cart, checkout & live order tracking | [https://flash-fit-web-customer.vercel.app](https://flash-fit-web-customer.vercel.app) |
-| **Admin Dashboard** | Operations portal for managing orders, inventory & delivery drivers | [https://flashfit-admin.vercel.app](https://flashfit-admin.vercel.app) |
-| **Driver App** | Mobile-first web app for drivers to accept orders, navigate & confirm delivery | [https://flashfit-drivers.vercel.app](https://flashfit-drivers.vercel.app) |
+| Application | Role | Production URL | Status |
+|---|---|---|:---:|
+| **Customer App** | Storefront, product catalog, cart, checkout & live order tracking | [https://flashfit-customer-web.vercel.app](https://flashfit-customer-web.vercel.app) | 🟢 Live (HTTP 200) |
+| **Admin Dashboard** | Operations portal for managing orders, inventory & delivery drivers | [https://flashfit-admin.vercel.app](https://flashfit-admin.vercel.app) | 🟢 Live (HTTP 200) |
+| **Driver App** | Mobile-first web app for drivers to accept orders, navigate & confirm delivery | [https://flashfit-driver-web.vercel.app](https://flashfit-driver-web.vercel.app) | 🟢 Live (HTTP 200) |
 
 ---
 

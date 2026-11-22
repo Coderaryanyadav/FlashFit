@@ -79,3 +79,4 @@ admin-dashboard/web-admin/SYSTEM_AUDIT.md
 # Seed data dependencies
 seed-data/node_modules/
 seed-data/package-lock.json
+.env*
