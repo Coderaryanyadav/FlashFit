@@ -39,9 +39,19 @@ export interface Product {
     price: number;
     category: string;
     images: string[];
+    image?: string;
     stock: number | Record<string, number>; // Number or Size Map
     storeId: string;
     isActive: boolean;
+    sizes?: string[];
+    colors?: string[];
+    rating?: number;
+    reviews?: number;
+    discount?: number;
+    createdAt?: any;
+    updatedAt?: any;
+    pincodes?: (string | number)[];
+    [key: string]: any;
 }
 
 export interface CartItem {
@@ -49,9 +59,17 @@ export interface CartItem {
     productId: string;
     quantity: number;
     size?: string;
+    color?: string;
     price: number; // Snapshot of price at time of add
     title: string;
     image?: string;
+    images?: string[];
+    category?: string;
+    description?: string;
+    stock?: number | Record<string, number>;
+    storeId?: string;
+    isActive?: boolean;
+    [key: string]: any;
 }
 
 // Order Types

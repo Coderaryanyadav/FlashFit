@@ -9,6 +9,8 @@ node_modules
 dist
 build
 out
+.vercel
+*.tsbuildinfo
 
 # Environment variables
 .env
@@ -64,6 +66,7 @@ tmp
 *CHECKLIST*.md
 *GUIDE*.md
 *PATTERN*.md
+!REBUTTAL_AUDIT_REPORT.md
 instructions.md
 backend/docs/
 admin-dashboard/web-admin/SYSTEM_AUDIT.md
