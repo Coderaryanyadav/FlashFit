@@ -17,8 +17,8 @@ import { ProductSkeleton } from "@/features/products/ui/ProductSkeleton";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/shared/hooks/useAuth";
 
-const LoginModal = dynamic(() => import("@/components/LoginModal").then(mod => mod.LoginModal), { ssr: false });
-const Marquee = dynamic(() => import("@/components/Marquee").then(mod => mod.Marquee), { ssr: false });
+import { LoginModal } from "@/components/LoginModal";
+import { Marquee } from "@/components/Marquee";
 
 const SERVICEABLE_PINCODE = "400059";
 
