@@ -80,3 +80,6 @@ admin-dashboard/web-admin/SYSTEM_AUDIT.md
 seed-data/node_modules/
 seed-data/package-lock.json
 .env*
+
+# GitHub configuration
+.github

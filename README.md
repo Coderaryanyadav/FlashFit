@@ -292,11 +292,6 @@ FlashFit (Monorepo Root)
 │   ├── 📄 CONTRIBUTING.md                  # Development guidelines, branch standards & PR checklist
 │   └── 📄 SECURITY.md                      # Vulnerability reporting and security policies
 │
-├── 📁 .github/                             # Continuous Integration & Automation Workflows
-│   ├── 📁 ISSUE_TEMPLATE/                  # Bug report & feature request GitHub issue templates
-│   ├── 📄 PULL_REQUEST_TEMPLATE.md         # Pull request review checklist
-│   └── 📁 workflows/                       # GitHub Actions (CI build, lint, and test validation)
-│
 ├── 📄 turbo.json                           # Turborepo task orchestrator pipeline definitions
 └── 📄 package.json                         # Monorepo root package manifest with workspace bindings
 ```
@@ -408,7 +403,6 @@ For deeper technical audit logs and deployment steps:
 We welcome community contributions, architectural improvements, and bug fixes!
 
 - **Contributing Guide**: Please review our [Contributing Guidelines](./docs/CONTRIBUTING.md) for branch naming conventions (`feat/`, `fix/`), testing standards, and local workspace setup.
-- **Issue Templates**: Submit bugs via the [Bug Report Template](./.github/ISSUE_TEMPLATE/bug_report.md) or propose features via the [Feature Request Template](./.github/ISSUE_TEMPLATE/feature_request.md).
 - **Security Policy**: For responsible vulnerability disclosure and supported versions, consult our [Security Policy](./docs/SECURITY.md).
 
 ---
