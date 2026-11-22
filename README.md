@@ -16,8 +16,8 @@
 **[🚀 Live Customer Storefront](https://flash-fit-web-customer.vercel.app)** &nbsp;•&nbsp;
 **[📊 Admin Operations Panel](https://flashfit-admin.vercel.app)** &nbsp;•&nbsp;
 **[🛵 Driver Partner Portal](https://flashfit-drivers.vercel.app)** &nbsp;•&nbsp;
-**[📋 Audit Report](./REBUTTAL_AUDIT_REPORT.md)** &nbsp;•&nbsp;
-**[🤝 Contributing](./CONTRIBUTING.md)**
+**[📋 Audit Report](./docs/REBUTTAL_AUDIT_REPORT.md)** &nbsp;•&nbsp;
+**[🤝 Contributing](./docs/CONTRIBUTING.md)**
 
 </div>
 
@@ -284,12 +284,19 @@ FlashFit (Monorepo Root)
 │   ├── 📄 setup-users.js                   # Test credentials and mock driver accounts generator
 │   └── 📄 firestore.indexes.json           # Composite index definitions for Firestore queries
 │
+├── 📁 docs/                                # Technical Documentation & Engineering Guides
+│   ├── 📄 REBUTTAL_AUDIT_REPORT.md         # Exhaustive audit findings, fixes, and rebuttal verification
+│   ├── 📄 VERCEL_DEPLOYMENT_GUIDE.md       # Monorepo deployment instructions, secrets, and CLI flags
+│   ├── 📄 VERCEL_SETUP_COMPLETE.md         # Complete environment and DNS propagation summary
+│   ├── 📄 PRODUCTION_DEPLOYMENT_CHECKLIST.md # Pre-flight and post-deployment checklist
+│   ├── 📄 CONTRIBUTING.md                  # Development guidelines, branch standards & PR checklist
+│   └── 📄 SECURITY.md                      # Vulnerability reporting and security policies
+│
 ├── 📁 .github/                             # Continuous Integration & Automation Workflows
+│   ├── 📁 ISSUE_TEMPLATE/                  # Bug report & feature request GitHub issue templates
+│   ├── 📄 PULL_REQUEST_TEMPLATE.md         # Pull request review checklist
 │   └── 📁 workflows/                       # GitHub Actions (CI build, lint, and test validation)
 │
-├── 📄 REBUTTAL_AUDIT_REPORT.md             # Exhaustive audit findings, fixes, and rebuttal verification
-├── 📄 VERCEL_DEPLOYMENT_GUIDE.md           # Monorepo deployment instructions, secrets, and CLI flags
-├── 📄 PRODUCTION_DEPLOYMENT_CHECKLIST.md    # Pre-flight and post-deployment checklist
 ├── 📄 turbo.json                           # Turborepo task orchestrator pipeline definitions
 └── 📄 package.json                         # Monorepo root package manifest with workspace bindings
 ```
@@ -390,9 +397,9 @@ The FlashFit platform has undergone an exhaustive engineering rebuttal audit:
 - **Vercel Production Verification**: Live deployments configured with root Turborepo context and verified returning `HTTP 200 OK` on all endpoints.
 
 For deeper technical audit logs and deployment steps:
-- 📖 [Comprehensive Rebuttal Audit Report](./REBUTTAL_AUDIT_REPORT.md)
-- 🚀 [Vercel Deployment Guide](./VERCEL_DEPLOYMENT_GUIDE.md)
-- 📋 [Production Deployment Checklist](./PRODUCTION_DEPLOYMENT_CHECKLIST.md)
+- 📖 [Comprehensive Rebuttal Audit Report](./docs/REBUTTAL_AUDIT_REPORT.md)
+- 🚀 [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT_GUIDE.md)
+- 📋 [Production Deployment Checklist](./docs/PRODUCTION_DEPLOYMENT_CHECKLIST.md)
 
 ---
 
@@ -400,9 +407,9 @@ For deeper technical audit logs and deployment steps:
 
 We welcome community contributions, architectural improvements, and bug fixes!
 
-- **Contributing Guide**: Please review our [Contributing Guidelines](./CONTRIBUTING.md) for branch naming conventions (`feat/`, `fix/`), testing standards, and local workspace setup.
+- **Contributing Guide**: Please review our [Contributing Guidelines](./docs/CONTRIBUTING.md) for branch naming conventions (`feat/`, `fix/`), testing standards, and local workspace setup.
 - **Issue Templates**: Submit bugs via the [Bug Report Template](./.github/ISSUE_TEMPLATE/bug_report.md) or propose features via the [Feature Request Template](./.github/ISSUE_TEMPLATE/feature_request.md).
-- **Security Policy**: For responsible vulnerability disclosure and supported versions, consult our [Security Policy](./SECURITY.md).
+- **Security Policy**: For responsible vulnerability disclosure and supported versions, consult our [Security Policy](./docs/SECURITY.md).
 
 ---
 
