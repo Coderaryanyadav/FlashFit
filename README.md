@@ -148,40 +148,122 @@ flowchart LR
 
 ---
 
-## 📁 Repository Structure
+## 📁 Monorepo Workspace Directory Tree
 
+```text
+FlashFit (Monorepo Root)
+│
+├── 📁 customer-app/
+│   └── 📁 web-customer/                   # [Port 3000] Customer Storefront (Next.js 14 App Router)
+│       ├── 📁 app/                         # App Router routing structure
+│       │   ├── 📁 (auth)/                  # User login, registration & phone OTP authentication
+│       │   ├── 📁 api/                     # Next.js Serverless Route Handlers
+│       │   │   ├── 📁 categories/          # GET /api/categories (Firestore catalog query)
+│       │   │   ├── 📁 products/            # GET/POST /api/products (Filtering & search)
+│       │   │   └── 📁 orders/              # POST /api/orders & live status updates
+│       │   ├── 📁 cart/                    # Shopping cart drawer & price calculations
+│       │   ├── 📁 checkout/                # Razorpay payment integration & address selection
+│       │   ├── 📁 orders/                  # Order status page & real-time delivery tracking
+│       │   ├── 📁 products/                # Product details, sizing selector & variant gallery
+│       │   ├── 📄 layout.tsx               # Root layout with TopBar, Navigation & Footer
+│       │   ├── 📄 page.tsx                 # Homepage: Hero banners, flash deals, categories
+│       │   ├── 📄 error.tsx                # Error boundary handler
+│       │   └── 📄 not-found.tsx            # Custom 404 handler
+│       ├── 📁 components/                  # Reusable UI component library
+│       │   ├── 📁 cart/                    # Cart items, price breakdown & promo codes
+│       │   ├── 📁 layout/                  # Navbar, CategoryNav, MobileMenu, Footer
+│       │   ├── 📁 order/                   # Live tracking stepper, map view & delivery ETA
+│       │   ├── 📁 product/                 # ProductCard, SizePicker, ImageCarousel, QuickBuy
+│       │   └── 📁 ui/                      # Base primitives (Button, Modal, Input, Badge, Skeleton)
+│       ├── 📁 lib/                         # Core utilities, stores, and service clients
+│       │   ├── 📄 firebase.ts              # Firebase Client SDK initialization
+│       │   └── 📄 firebaseAdmin.ts         # Firebase Admin SDK (Server-side Firestore operations)
+│       ├── 📁 store/                       # Client state management (Zustand)
+│       │   ├── 📄 cartStore.ts             # Cart state, persistent local storage, discounts
+│       │   ├── 📄 authStore.ts             # User authentication, session tokens
+│       │   └── 📄 locationStore.ts         # User geo-location, active delivery pincode
+│       ├── 📁 __tests__/                   # Unit & integration test suites (50 passing Jest tests)
+│       ├── 📁 e2e/                         # Playwright end-to-end shopping & checkout test specs
+│       ├── 📄 next.config.js               # Next.js bundler config with remote image domains
+│       ├── 📄 tailwind.config.js           # Tailwind CSS theme styling rules
+│       ├── 📄 tsconfig.json                # TypeScript compiler configuration
+│       └── 📄 package.json                 # customer-app dependencies & scripts
+│
+├── 📁 admin-dashboard/
+│   └── 📁 web-admin/                       # [Port 3001] Operations & Dispatch Panel (Next.js 14)
+│       ├── 📁 app/                         # Operations routes
+│       │   ├── 📁 analytics/               # Real-time GMV, delivery times, conversion metrics
+│       │   ├── 📁 customers/               # Customer relationship and order history
+│       │   ├── 📁 drivers/                 # Driver fleet roster, online/offline status, assignments
+│       │   ├── 📁 inventory/               # Dark store stock levels, low-stock alerts, SKU updates
+│       │   ├── 📁 orders/                  # Live order queue, filter by status (placed, ready, dispatched)
+│       │   └── 📁 settings/                # Store configuration, dark store radius & policies
+│       ├── 📁 components/                  # Data tables, live driver maps, dispatch modals
+│       ├── 📁 services/                    # Admin Firestore listeners and batch update APIs
+│       └── 📄 package.json                 # admin-dashboard dependencies & scripts
+│
+├── 📁 driver-app/
+│   └── 📁 web-driver/                      # [Port 3002] Driver Delivery Partner Portal (Next.js / Capacitor)
+│       ├── 📁 app/                         # Driver workflow routes
+│       │   ├── 📁 active-orders/           # Active pickup and delivery assignments
+│       │   ├── 📁 history/                 # Completed delivery history and trip logs
+│       │   ├── 📁 navigation/              # Turn-by-turn route coordinates to dark store & customer
+│       │   └── 📁 profile/                 # Driver credentials, vehicle details, earnings summary
+│       ├── 📁 components/                  # Swipe-to-accept cards, OTP verification modals, map view
+│       ├── 📄 capacitor.config.ts          # Hybrid mobile app wrapper configuration (Android/iOS)
+│       └── 📄 package.json                 # driver-app dependencies & scripts
+│
+├── 📁 seller-app/                          # [Port 3003] Vendor & Merchant Portal (Next.js 14)
+│   ├── 📁 app/                             # Seller routes (/products, /orders, /analytics, /inventory)
+│   ├── 📁 components/                      # Product onboarding modals, inventory update grids
+│   └── 📄 package.json                     # seller-app dependencies & scripts
+│
+├── 📁 backend/                             # Backend Services & Cloud Logic
+│   ├── 📁 functions/                       # Firebase Cloud Functions (TypeScript)
+│   │   ├── 📁 src/                         # Functions source code
+│   │   │   ├── 📄 index.ts                 # Order lifecycle trigger hooks (onOrderCreated, onDriverAssigned)
+│   │   │   └── 📄 ai.ts                    # Smart delivery ETA prediction & route optimization
+│   │   ├── 📄 firebase.json                # Cloud functions emulators & deploy target config
+│   │   ├── 📄 package.json                 # Functions dependencies
+│   │   └── 📄 tsconfig.json                # Functions TypeScript compiler configuration
+│   └── 📁 firestore-rules/                 # Production Firestore security & validation rules
+│       └── 📄 firestore.rules              # Granular read/write security rules for collections
+│
+├── 📁 packages/                            # Shared Internal Workspace Packages
+│   └── 📁 types/                           # Shared TypeScript domain types (@flashfit/types)
+│       ├── 📁 src/                         # Type declarations
+│       │   └── 📄 index.ts                 # Product, CartItem, Order, User, Driver, Category types
+│       ├── 📄 package.json                 # Workspace package manifest
+│       └── 📄 tsconfig.json                # Shared TypeScript configuration
+│
+├── 📁 seed-data/                           # Database Seeding & Mock Data
+│   ├── 📄 seed-firebase.js                 # Automated Firestore seeder for categories, products, stores
+│   ├── 📄 add-products.mjs                 # Apparel & sports equipment catalog loader
+│   ├── 📄 setup-users.js                   # Test credentials and mock driver accounts generator
+│   └── 📄 firestore.indexes.json           # Composite index definitions for Firestore queries
+│
+├── 📁 .github/                             # Continuous Integration & Automation Workflows
+│   └── 📁 workflows/                       # GitHub Actions (CI build, lint, and test validation)
+│
+├── 📄 REBUTTAL_AUDIT_REPORT.md             # Exhaustive audit findings, fixes, and rebuttal verification
+├── 📄 VERCEL_DEPLOYMENT_GUIDE.md           # Monorepo deployment instructions, secrets, and CLI flags
+├── 📄 PRODUCTION_DEPLOYMENT_CHECKLIST.md    # Pre-flight and post-deployment checklist
+├── 📄 turbo.json                           # Turborepo task orchestrator pipeline definitions
+└── 📄 package.json                         # Monorepo root package manifest with workspace bindings
 ```
-FlashFit/
-├── customer-app/
-│   └── web-customer/              # Customer-facing storefront (Next.js 14)
-│       ├── app/                   # App Router pages (/products, /cart, /checkout, /orders)
-│       │   ├── api/               # Serverless API routes (/api/categories, /api/products, etc.)
-│       │   └── layout.tsx         # Global layout with Navigation and Footer
-│       ├── components/            # UI components (ProductCard, Navbar, CartDrawer, etc.)
-│       ├── lib/                   # Utility helpers, Firebase config, and stores
-│       └── __tests__/             # Jest unit and component test suites (50 passing tests)
-├── admin-dashboard/
-│   └── web-admin/                 # Operations dashboard (Next.js 14)
-│       ├── app/                   # Order dispatch, inventory, driver monitoring
-│       └── components/            # Data tables, metrics cards, driver maps
-├── driver-app/
-│   └── web-driver/                # Driver companion mobile-first web app (Next.js 14 / Capacitor)
-│       ├── app/                   # Active deliveries, route navigation, OTP verification
-│       └── components/            # Order claim cards, status sliders, camera scanner
-├── seller-app/                    # Vendor portal for inventory catalog management (Next.js 14)
-├── backend/
-│   └── functions/                 # Firebase Cloud Functions (TypeScript)
-├── packages/
-│   └── types/                     # Shared domain models & TypeScript interfaces (@flashfit/types)
-│       ├── src/
-│       │   └── index.ts           # Product, CartItem, Order, User, Driver schemas
-│       └── tsconfig.json
-├── seed-data/                     # Database seed scripts for categories, products, and stores
-├── REBUTTAL_AUDIT_REPORT.md       # Full engineering audit and rebuttal verification report
-├── VERCEL_DEPLOYMENT_GUIDE.md     # Production deployment instructions and environment keys
-├── turbo.json                     # Turborepo task orchestrator configuration
-└── package.json                   # Root workspace manifest with monorepo scripts
-```
+
+---
+
+## 📦 Workspace Component Matrix
+
+| Module | Workspace Directory | Framework / Stack | Local Port | Production Live Link |
+| :--- | :--- | :--- | :---: | :--- |
+| **Storefront** | `customer-app/web-customer` | Next.js 14, Tailwind CSS, Zustand | `3000` | [flash-fit-web-customer.vercel.app](https://flash-fit-web-customer.vercel.app) |
+| **Operations** | `admin-dashboard/web-admin` | Next.js 14, Radix UI, Tailwind | `3001` | [flashfit-admin.vercel.app](https://flashfit-admin.vercel.app) |
+| **Rider Portal**| `driver-app/web-driver` | Next.js 14, Capacitor, Leaflet | `3002` | [flashfit-drivers.vercel.app](https://flashfit-drivers.vercel.app) |
+| **Seller Portal**| `seller-app` | Next.js 14, Tailwind CSS | `3003` | Local Micro-Frontend |
+| **Functions** | `backend/functions` | Node.js 18, TypeScript, Firebase | — | Cloud Trigger Workers |
+| **Types** | `packages/types` | TypeScript 5.x (`@flashfit/types`) | — | Internal Shared Library |
 
 ---
 
